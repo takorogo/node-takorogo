@@ -1,14 +1,16 @@
-def :Tweet
+def Tweet {
     id_str UNIQUE
-    user <--[POSTED]-- :User
-    metadata -->
-    in_reply_to_status_id_str => in_reply_to <--[ REPLIED_WITH|REPLIED_TO ]--> :Tweet
-    entities.urls[] --[ REFERS_TO(indices[first, last]) ]--> :Url
-    entities.hashtags[] --[ HAS_TAG(indices[first, last]) ]-->: HashTag(text)
-    coordinates --[ AT ]--> :Location
-    geo --[ ON ]--> :Location
+    <--[POSTED]-- user:User
+    --> metadata
+    <--[ REPLIED_WITH|REPLIED_TO ]--> in_reply_to_status_id_str => in_reply_to:Tweet
+     --[ REFERS_TO(indices[first, last]) ]--> entities.urls[]:Url
+     --[ HAS_TAG(indices[first, last]) ]--> entities.hashtags[]:HashTag(text)
+     --[ AT ]--> coordinates:Location
+     --[ ON ]--> geo:Location
+}
+ 
+def Location(coordinates[longitude, latitude])
 
-def :Location(coordinates[longitude, latitude])
-
-def :User(id_str)
-    entities.url.urls[]--[REFERS_TO(indices[first, last])]-->:Url
+def User(id_str) {
+    --[REFERS_TO(indices[first, last])]--> entities.url.urls[]:Url
+}

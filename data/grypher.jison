@@ -7,8 +7,6 @@
 
 \s+                   /* skip whitespace */
 
-[0-9]+("."[0-9]+)?\b  return 'NUMBER'
-
 "UNIQUE"              return 'UNIQUE'
 "def"                 return 'DEFINE'
 \w+                   return 'SYMNAME'
@@ -31,6 +29,9 @@
 
 "["                   return '['
 "]"                   return ']'
+
+"{"                   return '{'
+"}"                   return '}'
 
 "."                   return 'ACCESSOR'
 ","                   return ','
@@ -68,16 +69,16 @@ rules
   ;
 
 rule
-  : attribute relation class
-    { $$ = $2; $$.class = $3; $$.attribute = $1; }
-  | attribute relation
-    { $$ = $2; $$.attribute = $1; }
+  : relation attribute ':' type
+    { $$ = $1; $$.type = $4; $$.attribute = $2; }
+  | relation attribute
+    { $$ = $1; $$.attribute = $2; }
   | attribute UNIQUE
-    { $$ = { _rule: 'index', index: $1, type: 'unique' } }
-  | SYMNAME AS rule
-    { $$ = $3; $$.sourceField = $1; }
+    { $$ = { _rule: 'index', index: $1, type: 'unique' }; }
   | DEFINE class
     { $$ = $2; }
+  | DEFINE class '{' rules '}'
+    { $$ = $2; $$.rules = $$.rules = $4.concat($$.rules || []); }
   ;
 
 relation
@@ -91,9 +92,18 @@ relation
     { $$ = { _rule: 'relation', type: 'embed' }; }
   ;
 
+type
+  : class
+    { $$ = $1; }
+  | type AS_ARRAY
+    { $$ = [$1]; }
+  ;
+
 class
-  : ':' SYMNAME
-    { $$ = { _rule: 'class', name: $2 }; }
+  : SYMNAME
+    { $$ = { _ref: 'class', name: $1 }; }
+  | class '(' ')'
+    { $$ = $1; $$.rules = []; }
   | class '(' keys ')'
     { $$ = $1; $$.rules = [{ _rule: 'index', index: $3, type: 'unique' }]; }
   ;
@@ -101,8 +111,8 @@ class
 relation_obj
   : SYMNAME
     { $$ = {name: $1} }
-  | relation_obj '(' attribute ')'
-      { $$ = $1; $$.attribute = $3 }
+  | relation_obj '(' keys ')'
+      { $$ = $1; $$.keys = $3 }
   ;
   
 attribute
@@ -112,6 +122,8 @@ attribute
     { $$ = $1; $$.keys = $3; }
   | property AS_ARRAY
     { $$ = $1; $1.isArray = true; }
+  | property AS attribute
+    { $$ = $3; $$.aliasOf = $1; }
   ;
 
 property
