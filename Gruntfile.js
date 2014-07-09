@@ -16,11 +16,26 @@ module.exports = function (grunt) {
                 files: { 'lib/parser.js': 'data/grypher.jison' }
             }
         },
-        mochacli: {
-            all: ['test/**/*.js'],
+        mochacov: {
+            test: {
+                options: {
+                    reporter: 'spec',
+                    ui: 'tdd'
+                }
+            },
+            travis: {
+                options: {
+                    coveralls: true
+                }
+            },
+            local: {
+                options: {
+                    reporter: 'html-cov',
+                    output: 'coverage/coverage.html'
+                }
+            },
             options: {
-                reporter: 'spec',
-                ui: 'tdd'
+                files: ['test/**/*.js']
             }
         },
         watch: {
@@ -34,13 +49,16 @@ module.exports = function (grunt) {
         }
     });
 
+    // Send coverage report to Coveralls.io only for Travis CI builds.
+    var mochaCoverageTask = 'mochacov:' + (process.env.TRAVIS ? 'travis' : 'local');
+
     grunt.loadNpmTasks('grunt-jison');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-mocha-cli');
+    grunt.loadNpmTasks('grunt-mocha-cov');
     grunt.loadNpmTasks('grunt-release');
-    grunt.registerTask('test', ['jshint', 'jison', 'mochacli', 'watch']);
-    grunt.registerTask('ci', ['jshint', 'jison', 'mochacli']);
+    grunt.registerTask('test', ['jshint', 'jison', 'mochacov:test', 'watch']);
+    grunt.registerTask('ci', ['jshint', 'jison', mochaCoverageTask]);
     grunt.registerTask('default', ['test']);
     grunt.registerTask('publish', ['ci', 'release']);
 };
