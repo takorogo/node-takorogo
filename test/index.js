@@ -39,11 +39,13 @@ describe('grypher', function () {
                 {
                     _rule: "relation",
                     out: { name: "SPAM" },
-                    type: {
-                        _type: "class",
-                        name: "Spam"
-                    },
-                    attribute: { name: "spam" }
+                    attribute: {
+                        name: "spam",
+                        type: {
+                            _type: "class",
+                            name: "Spam"
+                        }
+                    }
                 }
             ]);
         });
@@ -53,11 +55,13 @@ describe('grypher', function () {
                 {
                     _rule: "relation",
                     in: { name: "EGGS" },
-                    type: {
-                        _type: "class",
-                        name: "Eggs"
-                    },
-                    attribute: { name: "eggs" }
+                    attribute: {
+                        name: "eggs",
+                        type: {
+                            _type: "class",
+                            name: "Eggs"
+                        }
+                    }
                 }
             ]);
         });
@@ -68,34 +72,13 @@ describe('grypher', function () {
                     _rule: "relation",
                     in: { name: "HAM" },
                     out: { name: "SPAM" },
-                    type: {
-                        _type: "class",
-                        name: "Spam"
-                    },
-                    attribute: { name: "spam" }
-                }
-            ]);
-        });
-
-        it('should support inline class definitions', function () {
-            expect(grypher.parse('--[SPAM]-->spam:Spam(eggs)')).to.be.deep.equal([
-                {
-                    _rule: "relation",
-                    out: { name: "SPAM" },
-                    type: {
-                        _type: "class",
-                        name: "Spam",
-                        rules: [
-                            {
-                                _rule: "index",
-                                index: [
-                                    { name: "eggs" }
-                                ],
-                                type: "unique"
-                            }
-                        ]
-                    },
-                    attribute: { name: "spam" }
+                    attribute: {
+                        name: "spam",
+                        type: {
+                            _type: "class",
+                            name: "Spam"
+                        }
+                    }
                 }
             ]);
         });
@@ -107,17 +90,285 @@ describe('grypher', function () {
                     out: {
                         name: "PARTICIPATE_IN",
                         keys: [
-                            { name:"score" },
-                            { name:"wins" }
+                            { name: "score" },
+                            { name: "wins" }
                         ]
                     },
-                    type: {
-                        _type: "class",
-                        name: "Game"
-                    },
-                    attribute: { name: "game" }
+                    attribute: {
+                        name: "game",
+                        type: {
+                            _type: "class",
+                            name: "Game"
+                        }
+                    }
                 }
             ]);
+        });
+    });
+
+    describe('attributes', function () {
+        it('should support property paths', function () {
+            expect(grypher.parse('--[CITIZEN_OF]--> place.country:Country')).to.be.deep.equal([
+                {
+                    _rule: "relation",
+                    out: { name: "CITIZEN_OF" },
+                    attribute: {
+                        name: "place.country",
+                        type: {
+                            _type: "class",
+                            name: "Country"
+                        }
+                    }
+                }
+            ]);
+        });
+
+        it('should support attribute rewrite', function () {
+            expect(grypher.parse('--[CITIZEN_OF]--> place.country => country:Country')).to.be.deep.equal([
+                {
+                    _rule: "relation",
+                    out: { name: "CITIZEN_OF" },
+                    attribute: {
+                        name: "country",
+                        type: {
+                            _type: "class",
+                            name: "Country"
+                        },
+                        aliasOf: { name: "place.country"}
+                    }
+                }
+            ]);
+        });
+    });
+
+    describe('indices', function () {
+        it('should support unique indices', function () {
+            expect(grypher.parse('id UNIQUE')).to.be.deep.equal([
+                {
+                    _rule: "index",
+                    index: { name: "id" },
+                    type: "unique"
+                }
+            ]);
+        });
+    });
+
+    describe('types', function () {
+        it('should support types for attributes', function () {
+            expect(grypher.parse('id:Int UNIQUE')).to.be.deep.equal([
+                {
+                    _rule: "index",
+                    index: {
+                        name: "id",
+                        type: {
+                            _type: "class",
+                            name: "Int"
+                        }
+                    },
+                    type: "unique"
+                }
+            ]);
+        });
+
+        it('should treat class references as types', function () {
+            expect(grypher.parse('--> tweet:Tweet')).to.be.deep.equal([
+                {
+                    _rule: "relation",
+                    type: "embed",
+                    attribute: {
+                        name: "tweet",
+                        type: {
+                            _type: "class",
+                            name: "Tweet"
+                        }
+                    }
+                }
+            ]);
+        });
+
+        it('should support array of type', function () {
+            expect(grypher.parse('--> comments:Comment[]')).to.be.deep.equal([
+                {
+                    _rule: "relation",
+                    type: "embed",
+                    attribute: {
+                        name: "comments",
+                        type: [
+                            {
+                                _type: "class",
+                                name: "Comment"
+                            }
+                        ]
+                    }
+                }
+            ]);
+        });
+    });
+
+    describe('classes', function () {
+        it('should support simple class declaration', function () {
+            expect(grypher.parse('def Tweet')).to.be.deep.equal([
+                {
+                    _type: "class",
+                    _rule: "definition",
+                    name: "Tweet"
+                }
+            ]);
+        });
+
+        it('should support class declaration with plain index', function () {
+            expect(grypher.parse('def HashTag(text)')).to.be.deep.equal([
+                {
+                    _type: "class",
+                    name: "HashTag",
+                    rules: [
+                        {
+                            _rule: "index",
+                            index: [
+                                { name: "text" }
+                            ],
+                            type: "unique"
+                        }
+                    ],
+                    _rule: "definition"}
+            ]);
+        });
+
+        it('should support class declaration with compound index', function () {
+            expect(grypher.parse('def Person(firstname, lastname)')).to.be.deep.equal([
+                {
+                    _type: "class",
+                    name: "Person",
+                    rules: [
+                        {
+                            _rule: "index",
+                            index: [
+                                { name: "firstname" },
+                                { name: "lastname" }
+                            ],
+                            type: "unique"
+                        }
+                    ],
+                    _rule: "definition"}
+            ]);
+        });
+
+        it('should support paths for indices in class declarations', function () {
+            expect(grypher.parse('def Citizen(credentials.passport.number)')).to.be.deep.equal([
+                {
+                    _type: "class",
+                    name: "Citizen",
+                    rules: [
+                        {
+                            _rule: "index",
+                            index: [
+                                { name: "credentials.passport.number" }
+                            ],
+                            type: "unique"
+                        }
+                    ],
+                    _rule: "definition"}
+            ]);
+        });
+
+        it('should support array destructing for index at class definition', function () {
+            expect(grypher.parse('def Location(coordinates[longitude, latitude])')).to.be.deep.equal([
+                {
+                    _type: "class",
+                    name: "Location",
+                    rules: [
+                        {
+                            _rule: "index",
+                            index: [
+                                {
+                                    name: "coordinates",
+                                    keys: [
+                                        { name: "longitude" },
+                                        { name: "latitude" }
+                                    ]
+                                }
+                            ],
+                            type: "unique"
+                        }
+                    ],
+                    _rule: "definition"}
+            ]);
+        });
+
+        it('should support class declaration with multiple rules', function () {
+            expect(grypher.parse('def User(passport.id) {' +
+                '    --[CHILD_OF]--> father:Person' +
+                '}')).to.be.deep.equal([
+                    {
+                        _type: "class",
+                        name: "User",
+                        rules: [
+                            {
+                                _rule: "relation",
+                                out: { name: "CHILD_OF" },
+                                attribute: {
+                                    name: "father",
+                                    type: {
+                                        _type: "class",
+                                        name: "Person"
+                                    }
+                                }
+                            },
+                            {
+                                _rule: "index",
+                                index: [
+                                    { name: "passport.id" }
+                                ],
+                                type: "unique"
+                            }
+                        ],
+                        _rule: "definition"
+                    }
+                ]);
+        });
+
+        describe('inline declarations', function () {
+            it('should support inline dummy class definitions', function () {
+                expect(grypher.parse('--[POPULATED_WITH]--> comment:Comment()')).to.be.deep.equal([
+                    {
+                        _rule: "relation",
+                        out: { name: "POPULATED_WITH" },
+                        attribute: {
+                            name: "comment",
+                            type: {
+                                _type: "class",
+                                name: "Comment",
+                                rules: []
+                            }
+                        }
+                    }
+                ]);
+            });
+
+            it('should support inline class definitions with indices', function () {
+                expect(grypher.parse('--[POPULATED_WITH]--> comment:Comment(id)')).to.be.deep.equal([
+                    {
+                        _rule: "relation",
+                        out: { name: "POPULATED_WITH" },
+                        attribute: {
+                            name: "comment",
+                            type: {
+                                _type: "class",
+                                name: "Comment",
+                                rules: [
+                                    {
+                                        _rule: "index",
+                                        index: [
+                                            { name: "id" }
+                                        ],
+                                        type: "unique"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]);
+            });
         });
     });
 });

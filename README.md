@@ -93,11 +93,12 @@ If document's field doesn't match what you want to have in the target node you c
 --[CITIZEN_OF]--> place.country => country:Country 
 ``` 
 
-### Classes
+### Classes & Types
 
-You can refer to already defined class by colon notation:
+You can refer to already defined class or type by colon notation:
 
 ```grypher
+id:Int UNIQUE
 --> tweet:Tweet
 ```
 
@@ -153,7 +154,7 @@ def User(passport.id) {
 Simple classes can be defined inside relation rules by appending class name with parentheses:
 
 ```grypher
---[POPULATED_WITH]--> comment:Comment()
+--[POPULATED_WITH]--> comment:Comment(id)
 ```
 
 You can specify indices as in normal declaration: 

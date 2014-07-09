@@ -69,16 +69,14 @@ rules
   ;
 
 rule
-  : relation attribute ':' type
-    { $$ = $1; $$.type = $4; $$.attribute = $2; }
-  | relation attribute
+  : relation attribute
     { $$ = $1; $$.attribute = $2; }
   | attribute UNIQUE
     { $$ = { _rule: 'index', index: $1, type: 'unique' }; }
   | DEFINE class
-    { $$ = $2; }
-  | DEFINE class '{' rules '}'
-    { $$ = $2; $$.rules = $$.rules = $4.concat($$.rules || []); }
+    { $$ = $2; $$._rule = 'definition'; }
+  | rule '{' rules '}'
+    { $$ = $1; $$.rules = $$.rules = $3.concat($$.rules || []); }
   ;
 
 relation
@@ -114,7 +112,7 @@ relation_obj
   | relation_obj '(' keys ')'
       { $$ = $1; $$.keys = $3 }
   ;
-
+  
 attribute
   : property
     { $$ = $1; }
@@ -122,6 +120,8 @@ attribute
     { $$ = $1; $$.keys = $3; }
   | property AS_ARRAY
     { $$ = $1; $1.isArray = true; }
+  | attribute ':' type
+    { $$ = $1; $$.type = $3; }
   | property AS attribute
     { $$ = $3; $$.aliasOf = $1; }
   ;
