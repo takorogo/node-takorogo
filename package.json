@@ -4,7 +4,9 @@
   "description": "Grypher to JSON parser for Node.js",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/.bin/grunt ci"
+    "test": "node_modules/.bin/grunt ci",
+    "prerelease": "node_modules/.bin/grunt release:prerelease",
+    "release": "node_modules/.bin/grunt release"
   },
   "repository": {
     "type": "git",
