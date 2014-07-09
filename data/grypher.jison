@@ -101,7 +101,7 @@ type
 
 class
   : SYMNAME
-    { $$ = { _ref: 'class', name: $1 }; }
+    { $$ = { _type: 'class', name: $1 }; }
   | class '(' ')'
     { $$ = $1; $$.rules = []; }
   | class '(' keys ')'
@@ -114,7 +114,7 @@ relation_obj
   | relation_obj '(' keys ')'
       { $$ = $1; $$.keys = $3 }
   ;
-  
+
 attribute
   : property
     { $$ = $1; }
