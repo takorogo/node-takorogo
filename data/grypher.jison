@@ -9,6 +9,7 @@
 
 "UNIQUE"              return 'UNIQUE'
 "def"                 return 'DEFINE'
+"+"                   return 'ATTR'
 \w+                   return 'SYMNAME'
 
 "--["                 return 'RELATION_START'
@@ -36,6 +37,7 @@
 "."                   return 'ACCESSOR'
 ","                   return ','
 
+"\n"                  return 'EOL'
 <<EOF>>               return 'EOF'
 
 #.*\n                 /* skip comments */
@@ -73,6 +75,8 @@ rule
     { $$ = $1; $$.attribute = $2; }
   | attribute UNIQUE
     { $$ = { _rule: 'index', index: $1, type: 'unique' }; }
+  | ATTR attribute_with_type
+      { $$ = { _rule: 'attribute', attribute: $2 }; }
   | DEFINE class
     { $$ = $2; $$._rule = 'definition'; }
   | rule '{' rules '}'

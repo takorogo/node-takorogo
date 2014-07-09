@@ -91,7 +91,18 @@ If document's field doesn't match what you want to have in the target node you c
  
 ```grypher
 --[CITIZEN_OF]--> place.country => country:Country 
-``` 
+```
+ 
+You also can assign types to attributes (user-defined classes are also supported):
+
+```grypher
+def :Person {
+    + firstName :String
+    + dateOfBirth :Date
+}        
+```
+
+Attention: attribute aliasing in types constraints are not supported yet. 
 
 ### Classes & Types
 
@@ -177,11 +188,10 @@ def :Person
     --[CHILD_OF]--> father:Person
 ```
 
-### Add types
+### Add attribute rewrite in type constraint statements
 
 ```grypher
-def :Person
-    passport.id :Int UNIQUE
-    firstName :String
-    dateOfBirth :Date    
+def :Person {
+    + name.first => firstName :String
+}
 ```

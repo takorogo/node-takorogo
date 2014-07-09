@@ -139,6 +139,21 @@ describe('grypher', function () {
                 }
             ]);
         });
+
+        it('should support attribute type constraints', function () {
+            expect(grypher.parse('+ firstName :String')).to.be.deep.equal([
+                {
+                    _rule: "attribute",
+                    attribute: {
+                        name: "firstName",
+                        type: {
+                            _type: "class",
+                            name: "String"
+                        }
+                    }
+                }
+            ]);
+        });
     });
 
     describe('indices', function () {
