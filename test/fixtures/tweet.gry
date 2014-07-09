@@ -1,5 +1,8 @@
+# The whole tweet document returned by Twitter Stream API
 def Tweet {
-    UNIQUE(id_str)
+    UNIQUE(id_str:String)
+    UNIQUE(id:Int)
+
     <--[POSTED]-- user:User
     --> metadata
     <--[ REPLIED_WITH|REPLIED_TO ]--> in_reply_to_status_id_str => in_reply_to:Tweet
@@ -7,9 +10,19 @@ def Tweet {
      --[ HAS_TAG(indices[first, last]) ]--> entities.hashtags[]:HashTag(text)
      --[ AT ]--> coordinates:Location
      --[ ON ]--> geo:Location
+     --[ PLACED ]--> place:Place
 }
- 
-def Location(coordinates[longitude, latitude])
+
+# Just a point
+def Coordinates [ longitude, latitude ] {
+  UNIQUE(longitude: Double, latitude: Double)
+}
+
+def Location(coordinates:Coordinates)  // Simply a wrapper for coordinates
+
+def Place {
+    --[ BOUNDED_BY ]--> bounding_box.coordinates => bounding_box:Coordinates[]
+}
 
 def User(id_str) {
     --[REFERS_TO(indices[first, last])]--> entities.url.urls[]:Url

@@ -161,7 +161,9 @@ describe('grypher', function () {
             expect(grypher.parse('UNIQUE(id)')).to.be.deep.equal([
                 {
                     _rule: "index",
-                    index: [{ name: "id" }],
+                    index: [
+                        { name: "id" }
+                    ],
                     type: "unique"
                 }
             ]);
@@ -186,13 +188,15 @@ describe('grypher', function () {
             expect(grypher.parse('UNIQUE(id:Int)')).to.be.deep.equal([
                 {
                     _rule: "index",
-                    index: [{
-                        name: "id",
-                        type: {
-                            _type: "class",
-                            name: "Int"
+                    index: [
+                        {
+                            name: "id",
+                            type: {
+                                _type: "class",
+                                name: "Int"
+                            }
                         }
-                    }],
+                    ],
                     type: "unique"
                 }
             ]);
@@ -353,6 +357,50 @@ describe('grypher', function () {
                         _rule: "definition"
                     }
                 ]);
+        });
+
+        describe('enumerations', function () {
+            it('should be defined by array syntax', function () {
+                expect(grypher.parse('def Coordinates [ longitude, latitude ]')).to.be.deep.equal([
+                    {
+                        _type: "class",
+                        _rule: "enumeration",
+                        name: "Coordinates",
+                        elements: [
+                            { name: "longitude" },
+                            { name: "latitude" }
+                        ]
+                    }
+                ]);
+            });
+
+            it('should support rules definition for enumerations', function () {
+                expect(grypher.parse('def VendorCoordinates [ longitude, latitude, vendor ] {' +
+                    'UNIQUE(longitude, latitude, vendor.id)' +
+                    '}')).to.be.deep.equal([
+                    {
+                        _type: "class",
+                        _rule: "enumeration",
+                        name: "VendorCoordinates",
+                        elements: [
+                            { name: "longitude" },
+                            { name: "latitude" },
+                            { name: "vendor" }
+                        ],
+                        rules: [
+                            {
+                                _rule: "index",
+                                index: [
+                                    { name: "longitude" },
+                                    { name: "latitude" },
+                                    { name :"vendor.id"}
+                                ],
+                                type: "unique"
+                            }
+                        ]
+                    }
+                ]);
+            });
         });
 
         describe('inline declarations', function () {

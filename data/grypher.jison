@@ -79,6 +79,8 @@ rule
       { $$ = { _rule: 'attribute', attribute: $2 }; }
   | DEFINE class
     { $$ = $2; $$._rule = 'definition'; }
+  | DEFINE class '[' properties ']'
+    { $$ = $2; $$._rule = 'enumeration'; $$.elements = $4; }
   | rule '{' rules '}'
     { $$ = $1; $$.rules = $$.rules = $3.concat($$.rules || []); }
   ;
@@ -145,6 +147,13 @@ property
     { $$ = { name: $1 }; }
   | property ACCESSOR SYMNAME
       { $$ = $1; $$.name += '.' + $3; }
+  ;
+
+properties
+  : property
+    { $$ = [$1]; }
+  | properties ',' property
+    { $$ = $1; $$.push($3); }
   ;
 
 keys

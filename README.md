@@ -24,7 +24,7 @@ var grypher = require('grypher');
 var rules = grypher.parse('user <--[POSTED]-- :User');
 ```
 
-Grypher syntax
+Grypher Syntax
 ----------------
 
 Grypher uses relations to maps properties to nodes determined by classes and their indices. That's all.
@@ -135,6 +135,8 @@ In case when you have a collection of instances you can use an array syntax:
 --> comments:Comment[]
 ```
 
+#### Class Definition
+
 To define class use `def` keyword:
 
 ```grypher
@@ -167,6 +169,8 @@ For this cases you can write:
 def Location(coordinates[longitude, latitude])
 ```
 
+#### Complex Classes
+
 You can define rules for complex classes in curly braces:
 
 ```grypher
@@ -176,7 +180,24 @@ def User(passport.id) {
 }
 ```
 
-### Inline class definition
+#### Enumerations
+
+You can define enumeration mappers for arrays of fixed length:
+
+```grypher
+def Coordinates [ longitude, latitude ]
+```
+
+After array items specified we can treat it as a regular document:
+
+```grypher
+def VendorCoordinates [ longitude, latitude, vendor ] {
+  UNIQUE(longitude, latitude, vendor.id)
+  --[PRODUCED_BY]--> vendor:Vendor  
+}
+```
+
+### Inline Class Definition
 
 Simple classes can be defined inside relation rules by appending class name with parentheses:
 
@@ -191,6 +212,56 @@ You can specify indices as in normal declaration:
 ```
 
 That will create a class `Url` with `url` as primary key and use it as a map for related nodes.
+
+
+### Comments
+
+Grypher supports only one line comments (both `#` and `//`):
+
+```grypher
+# JIRA task 
+def Task {
+  UNIQUE(id)  // Primary key
+  --[BLOCKED_BY]-->blocker:Task
+}
+```
+
+Examples
+--------
+
+The following Grypher script describes tweet structure from Twitter Stream API:  
+
+```grypher
+# The whole tweet document returned by Twitter Stream API
+def Tweet {
+    UNIQUE(id_str:String)
+    UNIQUE(id:Int)
+
+    <--[POSTED]-- user:User
+    --> metadata
+    <--[ REPLIED_WITH|REPLIED_TO ]--> in_reply_to_status_id_str => in_reply_to:Tweet
+     --[ REFERS_TO(indices[first, last]) ]--> entities.urls[]:Url
+     --[ HAS_TAG(indices[first, last]) ]--> entities.hashtags[]:HashTag(text)
+     --[ AT ]--> coordinates:Location
+     --[ ON ]--> geo:Location
+     --[ PLACED ]--> place:Place
+}
+
+# Just a point
+def Coordinates [ longitude, latitude ] {
+  UNIQUE(longitude: Double, latitude: Double)
+}
+
+def Location(coordinates:Coordinates)  // Simply a wrapper for coordinates 
+
+def Place {
+    --[ BOUNDED_BY ]--> bounding_box.coordinates => bounding_box:Coordinates[]
+}
+
+def User(id_str) {
+    --[REFERS_TO(indices[first, last])]--> entities.url.urls[]:Url
+}
+```
 
 
 Road map
