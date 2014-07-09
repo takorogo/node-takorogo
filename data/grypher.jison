@@ -73,8 +73,8 @@ rules
 rule
   : relation attribute
     { $$ = $1; $$.attribute = $2; }
-  | attribute UNIQUE
-    { $$ = { _rule: 'index', index: $1, type: 'unique' }; }
+  | UNIQUE "(" keys ")"
+    { $$ = { _rule: 'index', index: $3, type: 'unique' }; }
   | ATTR attribute_with_type
       { $$ = { _rule: 'attribute', attribute: $2 }; }
   | DEFINE class

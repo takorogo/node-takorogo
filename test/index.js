@@ -158,10 +158,23 @@ describe('grypher', function () {
 
     describe('indices', function () {
         it('should support unique indices', function () {
-            expect(grypher.parse('id UNIQUE')).to.be.deep.equal([
+            expect(grypher.parse('UNIQUE(id)')).to.be.deep.equal([
                 {
                     _rule: "index",
-                    index: { name: "id" },
+                    index: [{ name: "id" }],
+                    type: "unique"
+                }
+            ]);
+        });
+
+        it('should support compound unique indices', function () {
+            expect(grypher.parse('UNIQUE(firstName, lastName)')).to.be.deep.equal([
+                {
+                    _rule: "index",
+                    index: [
+                        { name: "firstName" },
+                        { name: "lastName" }
+                    ],
                     type: "unique"
                 }
             ]);
@@ -170,16 +183,16 @@ describe('grypher', function () {
 
     describe('types', function () {
         it('should support types for attributes', function () {
-            expect(grypher.parse('id:Int UNIQUE')).to.be.deep.equal([
+            expect(grypher.parse('UNIQUE(id:Int)')).to.be.deep.equal([
                 {
                     _rule: "index",
-                    index: {
+                    index: [{
                         name: "id",
                         type: {
                             _type: "class",
                             name: "Int"
                         }
-                    },
+                    }],
                     type: "unique"
                 }
             ]);

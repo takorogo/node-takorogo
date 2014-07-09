@@ -106,12 +106,26 @@ def :Person {
 
 Attention: attribute aliasing in types constraints are not supported yet. 
 
+### Indices
+
+You can specify unique constraint: 
+
+```grypher
+UNIQUE(id)
+```
+
+Grypher also handles compound constraints:
+  
+```grypher
+UNIQUE(firstName, lastName)
+```
+
 ### Classes & Types
 
 You can refer to already defined class or type by colon notation:
 
 ```grypher
-id:Int UNIQUE
+UNIQUE(id:Int)
 --> tweet:Tweet
 ```
 
@@ -186,7 +200,7 @@ Road map
 
 ```grypher
 def :Person
-    passport.id UNIQUE
+    UNIQUE(passport.id)
     --[CHILD_OF]--> father:Person
 ```
 
