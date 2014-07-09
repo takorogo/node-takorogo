@@ -114,16 +114,26 @@ relation_obj
   ;
   
 attribute
+  : attribute_without_type
+    { $$ = $1; }
+  | attribute_with_type
+    { $$ = $1; }
+  ;
+
+attribute_without_type
   : property
     { $$ = $1; }
   | property '[' keys ']'
     { $$ = $1; $$.keys = $3; }
   | property AS_ARRAY
     { $$ = $1; $1.isArray = true; }
-  | attribute ':' type
-    { $$ = $1; $$.type = $3; }
   | property AS attribute
     { $$ = $3; $$.aliasOf = $1; }
+  ;
+
+attribute_with_type
+  : attribute ':' type
+      { $$ = $1; $$.type = $3; }
   ;
 
 property
