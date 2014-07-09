@@ -3,8 +3,9 @@ node-grypher
 
 Grypher to JSON parser for Node.js
 
-[![build status](https://secure.travis-ci.org/Sitin/node-grypher.png)](http://travis-ci.org/Sitin/node-grypher)
-[![coverage status](https://coveralls.io/repos/Sitin/node-grypher/badge.png)](https://coveralls.io/r/Sitin/node-grypher)
+[![build status](https://travis-ci.org/Sitin/node-grypher.svg)](http://travis-ci.org/Sitin/node-grypher)
+[![Coverage Status](https://img.shields.io/coveralls/Sitin/node-grypher.svg)](https://coveralls.io/r/Sitin/node-grypher)
+[![NPM version](https://badge.fury.io/js/grypher.svg)](http://badge.fury.io/js/grypher)
 
 Installation
 ------------
