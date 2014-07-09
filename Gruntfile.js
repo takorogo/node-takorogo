@@ -40,7 +40,7 @@ module.exports = function (grunt) {
         },
         watch: {
             js: {
-                files: ['**/*.js', 'data/*.jison', 'test/fixtures/**', '!node_modules/**/*.js'],
+                files: ['**/*.js', 'data/*.jison', 'test/fixtures/*.*', '!node_modules/**/*.js'],
                 tasks: ['default'],
                 options: {
                     nospawn: true
