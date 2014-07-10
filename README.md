@@ -236,6 +236,8 @@ The following Grypher script describes tweet structure from Twitter Stream API:
 def Tweet {
     UNIQUE(id_str:String)
     UNIQUE(id:Int)
+    
+    + location: String
 
     <--[POSTED]-- user:User
     --> metadata

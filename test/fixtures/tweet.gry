@@ -3,6 +3,8 @@ def Tweet {
     UNIQUE(id_str:String)
     UNIQUE(id:Int)
 
+    + location: String
+
     <--[POSTED]-- user:User
     --> metadata
     <--[ REPLIED_WITH|REPLIED_TO ]--> in_reply_to_status_id_str => in_reply_to:Tweet
