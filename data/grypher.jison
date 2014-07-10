@@ -59,8 +59,6 @@
 file
   : rules EOF
     { return $1; }
-  | EOF
-    { return []; }
   ;
 
 rules
