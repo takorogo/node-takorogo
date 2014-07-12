@@ -24,11 +24,10 @@ describe('grypher', function () {
     });
 
     describe('relations', function () {
-        it('should support embed object rules', function () {
+        it('should support flattening of embedded objects', function () {
             expect(grypher.parse('-->metadata')).to.be.deep.equal([
                 {
-                    _rule: "relation",
-                    type: "embed",
+                    rule: "flatten",
                     attribute: { name: "metadata" }
                 }
             ]);
@@ -37,12 +36,12 @@ describe('grypher', function () {
         it('should support out relations', function () {
             expect(grypher.parse('--[SPAM]-->spam:Spam')).to.be.deep.equal([
                 {
-                    _rule: "relation",
+                    rule: "relation",
                     out: { name: "SPAM" },
                     attribute: {
                         name: "spam",
                         type: {
-                            _type: "class",
+                            type: "class",
                             name: "Spam"
                         }
                     }
@@ -53,12 +52,12 @@ describe('grypher', function () {
         it('should support in relations', function () {
             expect(grypher.parse('<--[EGGS]--eggs:Eggs')).to.be.deep.equal([
                 {
-                    _rule: "relation",
+                    rule: "relation",
                     in: { name: "EGGS" },
                     attribute: {
                         name: "eggs",
                         type: {
-                            _type: "class",
+                            type: "class",
                             name: "Eggs"
                         }
                     }
@@ -69,13 +68,13 @@ describe('grypher', function () {
         it('should support bidirectional relations', function () {
             expect(grypher.parse('<--[HAM|SPAM]-->spam:Spam')).to.be.deep.equal([
                 {
-                    _rule: "relation",
+                    rule: "relation",
                     in: { name: "HAM" },
                     out: { name: "SPAM" },
                     attribute: {
                         name: "spam",
                         type: {
-                            _type: "class",
+                            type: "class",
                             name: "Spam"
                         }
                     }
@@ -86,7 +85,7 @@ describe('grypher', function () {
         it('should support relation attributes', function () {
             expect(grypher.parse('--[PARTICIPATE_IN(score, wins)]--> game:Game')).to.be.deep.equal([
                 {
-                    _rule: "relation",
+                    rule: "relation",
                     out: {
                         name: "PARTICIPATE_IN",
                         keys: [
@@ -97,7 +96,7 @@ describe('grypher', function () {
                     attribute: {
                         name: "game",
                         type: {
-                            _type: "class",
+                            type: "class",
                             name: "Game"
                         }
                     }
@@ -110,12 +109,12 @@ describe('grypher', function () {
         it('should support property paths', function () {
             expect(grypher.parse('--[CITIZEN_OF]--> place.country:Country')).to.be.deep.equal([
                 {
-                    _rule: "relation",
+                    rule: "relation",
                     out: { name: "CITIZEN_OF" },
                     attribute: {
                         name: "place.country",
                         type: {
-                            _type: "class",
+                            type: "class",
                             name: "Country"
                         }
                     }
@@ -126,12 +125,12 @@ describe('grypher', function () {
         it('should support attribute rewrite', function () {
             expect(grypher.parse('--[CITIZEN_OF]--> place.country => country:Country')).to.be.deep.equal([
                 {
-                    _rule: "relation",
+                    rule: "relation",
                     out: { name: "CITIZEN_OF" },
                     attribute: {
                         name: "country",
                         type: {
-                            _type: "class",
+                            type: "class",
                             name: "Country"
                         },
                         aliasOf: { name: "place.country"}
@@ -143,11 +142,11 @@ describe('grypher', function () {
         it('should support attribute type constraints', function () {
             expect(grypher.parse('+ firstName :String')).to.be.deep.equal([
                 {
-                    _rule: "attribute",
+                    rule: "attribute",
                     attribute: {
                         name: "firstName",
                         type: {
-                            _type: "class",
+                            type: "class",
                             name: "String"
                         }
                     }
@@ -160,7 +159,7 @@ describe('grypher', function () {
         it('should support unique indices', function () {
             expect(grypher.parse('UNIQUE(id)')).to.be.deep.equal([
                 {
-                    _rule: "index",
+                    rule: "index",
                     index: [
                         { name: "id" }
                     ],
@@ -172,7 +171,7 @@ describe('grypher', function () {
         it('should support compound unique indices', function () {
             expect(grypher.parse('UNIQUE(firstName, lastName)')).to.be.deep.equal([
                 {
-                    _rule: "index",
+                    rule: "index",
                     index: [
                         { name: "firstName" },
                         { name: "lastName" }
@@ -187,12 +186,12 @@ describe('grypher', function () {
         it('should support types for attributes', function () {
             expect(grypher.parse('UNIQUE(id:Int)')).to.be.deep.equal([
                 {
-                    _rule: "index",
+                    rule: "index",
                     index: [
                         {
                             name: "id",
                             type: {
-                                _type: "class",
+                                type: "class",
                                 name: "Int"
                             }
                         }
@@ -205,12 +204,11 @@ describe('grypher', function () {
         it('should treat class references as types', function () {
             expect(grypher.parse('--> tweet:Tweet')).to.be.deep.equal([
                 {
-                    _rule: "relation",
-                    type: "embed",
+                    rule: "flatten",
                     attribute: {
                         name: "tweet",
                         type: {
-                            _type: "class",
+                            type: "class",
                             name: "Tweet"
                         }
                     }
@@ -221,16 +219,15 @@ describe('grypher', function () {
         it('should support array of type', function () {
             expect(grypher.parse('--> comments:Comment[]')).to.be.deep.equal([
                 {
-                    _rule: "relation",
-                    type: "embed",
+                    rule: "flatten",
                     attribute: {
                         name: "comments",
-                        type: [
-                            {
-                                _type: "class",
-                                name: "Comment"
-                            }
-                        ]
+                        type: {
+                            type: "class",
+                            name: "Comment",
+                            isArrayOf: true,
+                            arrayDepth: 1
+                        }
                     }
                 }
             ]);
@@ -241,8 +238,8 @@ describe('grypher', function () {
         it('should support simple class declaration', function () {
             expect(grypher.parse('def Tweet')).to.be.deep.equal([
                 {
-                    _type: "class",
-                    _rule: "definition",
+                    type: "class",
+                    rule: "definition",
                     name: "Tweet"
                 }
             ]);
@@ -251,29 +248,29 @@ describe('grypher', function () {
         it('should support class declaration with plain index', function () {
             expect(grypher.parse('def HashTag(text)')).to.be.deep.equal([
                 {
-                    _type: "class",
+                    type: "class",
                     name: "HashTag",
                     rules: [
                         {
-                            _rule: "index",
+                            rule: "index",
                             index: [
                                 { name: "text" }
                             ],
                             type: "unique"
                         }
                     ],
-                    _rule: "definition"}
+                    rule: "definition"}
             ]);
         });
 
         it('should support class declaration with compound index', function () {
             expect(grypher.parse('def Person(firstname, lastname)')).to.be.deep.equal([
                 {
-                    _type: "class",
+                    type: "class",
                     name: "Person",
                     rules: [
                         {
-                            _rule: "index",
+                            rule: "index",
                             index: [
                                 { name: "firstname" },
                                 { name: "lastname" }
@@ -281,36 +278,36 @@ describe('grypher', function () {
                             type: "unique"
                         }
                     ],
-                    _rule: "definition"}
+                    rule: "definition"}
             ]);
         });
 
         it('should support paths for indices in class declarations', function () {
             expect(grypher.parse('def Citizen(credentials.passport.number)')).to.be.deep.equal([
                 {
-                    _type: "class",
+                    type: "class",
                     name: "Citizen",
                     rules: [
                         {
-                            _rule: "index",
+                            rule: "index",
                             index: [
                                 { name: "credentials.passport.number" }
                             ],
                             type: "unique"
                         }
                     ],
-                    _rule: "definition"}
+                    rule: "definition"}
             ]);
         });
 
         it('should support array destructing for index at class definition', function () {
             expect(grypher.parse('def Location(coordinates[longitude, latitude])')).to.be.deep.equal([
                 {
-                    _type: "class",
+                    type: "class",
                     name: "Location",
                     rules: [
                         {
-                            _rule: "index",
+                            rule: "index",
                             index: [
                                 {
                                     name: "coordinates",
@@ -323,7 +320,7 @@ describe('grypher', function () {
                             type: "unique"
                         }
                     ],
-                    _rule: "definition"}
+                    rule: "definition"}
             ]);
         });
 
@@ -332,29 +329,29 @@ describe('grypher', function () {
                 '    --[CHILD_OF]--> father:Person' +
                 '}')).to.be.deep.equal([
                     {
-                        _type: "class",
+                        type: "class",
                         name: "User",
                         rules: [
                             {
-                                _rule: "relation",
+                                rule: "relation",
                                 out: { name: "CHILD_OF" },
                                 attribute: {
                                     name: "father",
                                     type: {
-                                        _type: "class",
+                                        type: "class",
                                         name: "Person"
                                     }
                                 }
                             },
                             {
-                                _rule: "index",
+                                rule: "index",
                                 index: [
                                     { name: "passport.id" }
                                 ],
                                 type: "unique"
                             }
                         ],
-                        _rule: "definition"
+                        rule: "definition"
                     }
                 ]);
         });
@@ -363,8 +360,8 @@ describe('grypher', function () {
             it('should be defined by array syntax', function () {
                 expect(grypher.parse('def Coordinates [ longitude, latitude ]')).to.be.deep.equal([
                     {
-                        _type: "class",
-                        _rule: "enumeration",
+                        type: "class",
+                        rule: "enumeration",
                         name: "Coordinates",
                         elements: [
                             { name: "longitude" },
@@ -379,8 +376,8 @@ describe('grypher', function () {
                     'UNIQUE(longitude, latitude, vendor.id)' +
                     '}')).to.be.deep.equal([
                     {
-                        _type: "class",
-                        _rule: "enumeration",
+                        type: "class",
+                        rule: "enumeration",
                         name: "VendorCoordinates",
                         elements: [
                             { name: "longitude" },
@@ -389,7 +386,7 @@ describe('grypher', function () {
                         ],
                         rules: [
                             {
-                                _rule: "index",
+                                rule: "index",
                                 index: [
                                     { name: "longitude" },
                                     { name: "latitude" },
@@ -407,13 +404,14 @@ describe('grypher', function () {
             it('should support inline dummy class definitions', function () {
                 expect(grypher.parse('--[POPULATED_WITH]--> comment:Comment()')).to.be.deep.equal([
                     {
-                        _rule: "relation",
+                        rule: "relation",
                         out: { name: "POPULATED_WITH" },
                         attribute: {
                             name: "comment",
                             type: {
-                                _type: "class",
+                                type: "class",
                                 name: "Comment",
+                                rule: "definition",
                                 rules: []
                             }
                         }
@@ -424,16 +422,17 @@ describe('grypher', function () {
             it('should support inline class definitions with indices', function () {
                 expect(grypher.parse('--[POPULATED_WITH]--> comment:Comment(id)')).to.be.deep.equal([
                     {
-                        _rule: "relation",
+                        rule: "relation",
                         out: { name: "POPULATED_WITH" },
                         attribute: {
                             name: "comment",
                             type: {
-                                _type: "class",
+                                type: "class",
                                 name: "Comment",
+                                rule: "definition",
                                 rules: [
                                     {
-                                        _rule: "index",
+                                        rule: "index",
                                         index: [
                                             { name: "id" }
                                         ],

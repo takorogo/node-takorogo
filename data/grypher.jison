@@ -72,42 +72,42 @@ rule
   : relation attribute
     { $$ = $1; $$.attribute = $2; }
   | UNIQUE "(" keys ")"
-    { $$ = { _rule: 'index', index: $3, type: 'unique' }; }
+    { $$ = { rule: 'index', index: $3, type: 'unique' }; }
   | ATTR attribute_with_type
-      { $$ = { _rule: 'attribute', attribute: $2 }; }
+      { $$ = { rule: 'attribute', attribute: $2 }; }
   | DEFINE class
-    { $$ = $2; $$._rule = 'definition'; }
+    { $$ = $2; $$.rule = 'definition'; }
   | DEFINE class '[' properties ']'
-    { $$ = $2; $$._rule = 'enumeration'; $$.elements = $4; }
+    { $$ = $2; $$.rule = 'enumeration'; $$.elements = $4; }
   | rule '{' rules '}'
     { $$ = $1; $$.rules = $$.rules = $3.concat($$.rules || []); }
+  | RELATION_OUT attribute
+      { $$ = { rule: 'flatten', attribute: $2 }; }
   ;
 
 relation
   : RELATION_START relation_obj RELATION_END OUT
-    { $$ = { _rule: 'relation', out: $2 }; }
+    { $$ = { rule: 'relation', out: $2 }; }
   | IN RELATION_START relation_obj RELATION_END
-    { $$ = { _rule: 'relation', in: $3 }; }
+    { $$ = { rule: 'relation', in: $3 }; }
   | IN RELATION_START relation_obj PIPE relation_obj RELATION_END OUT
-    { $$ = { _rule: 'relation', in: $3, out: $5 }; }
-  | RELATION_OUT
-    { $$ = { _rule: 'relation', type: 'embed' }; }
+    { $$ = { rule: 'relation', in: $3, out: $5 }; }
   ;
 
 type
   : class
     { $$ = $1; }
   | type AS_ARRAY
-    { $$ = [$1]; }
+    { $$ = $1; $$.isArrayOf = true; $$.arrayDepth = ($$.arrayDepth || 0) + 1; }
   ;
 
 class
   : SYMNAME
-    { $$ = { _type: 'class', name: $1 }; }
+    { $$ = { type: 'class', name: $1 }; }
   | class '(' ')'
-    { $$ = $1; $$.rules = []; }
+    { $$ = $1; $$.rules = []; $$.rule = 'definition'; }
   | class '(' keys ')'
-    { $$ = $1; $$.rules = [{ _rule: 'index', index: $3, type: 'unique' }]; }
+    { $$ = $1; $$.rules = [{ rule: 'index', index: $3, type: 'unique' }]; $$.rule = 'definition'; }
   ;
 
 relation_obj
