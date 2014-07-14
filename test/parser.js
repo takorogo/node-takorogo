@@ -4,28 +4,28 @@
 
 
 var expect = require('chai').expect,
-    grypher = require('..'),
+    parser = require('../lib/parser'),
     fs = require('fs'),
     tweetRules = fs.readFileSync('./test/fixtures/tweet.gry').toString();
 
 
-describe('grypher', function () {
+describe('parser', function () {
     "use strict";
 
     it('should export parser', function () {
-        expect(grypher).to.be.an('object');
-        expect(grypher).to.respondTo('parse');
+        expect(parser).to.be.an('object');
+        expect(parser).to.respondTo('parse');
     });
 
     it('should parse tweet rules', function () {
         expect(function () {
-            grypher.parse(tweetRules);
+            parser.parse(tweetRules);
         }).to.not.throw();
     });
 
     describe('relations', function () {
         it('should support flattening of embedded objects', function () {
-            expect(grypher.parse('-->metadata')).to.be.deep.equal([
+            expect(parser.parse('-->metadata')).to.be.deep.equal([
                 {
                     rule: "flatten",
                     attribute: { name: "metadata" }
@@ -34,7 +34,7 @@ describe('grypher', function () {
         });
 
         it('should support out relations', function () {
-            expect(grypher.parse('--[SPAM]-->spam:Spam')).to.be.deep.equal([
+            expect(parser.parse('--[SPAM]-->spam:Spam')).to.be.deep.equal([
                 {
                     rule: "relation",
                     out: { name: "SPAM" },
@@ -50,7 +50,7 @@ describe('grypher', function () {
         });
 
         it('should support in relations', function () {
-            expect(grypher.parse('<--[EGGS]--eggs:Eggs')).to.be.deep.equal([
+            expect(parser.parse('<--[EGGS]--eggs:Eggs')).to.be.deep.equal([
                 {
                     rule: "relation",
                     in: { name: "EGGS" },
@@ -66,7 +66,7 @@ describe('grypher', function () {
         });
 
         it('should support bidirectional relations', function () {
-            expect(grypher.parse('<--[HAM|SPAM]-->spam:Spam')).to.be.deep.equal([
+            expect(parser.parse('<--[HAM|SPAM]-->spam:Spam')).to.be.deep.equal([
                 {
                     rule: "relation",
                     in: { name: "HAM" },
@@ -83,7 +83,7 @@ describe('grypher', function () {
         });
 
         it('should support relation attributes', function () {
-            expect(grypher.parse('--[PARTICIPATE_IN(score, wins)]--> game:Game')).to.be.deep.equal([
+            expect(parser.parse('--[PARTICIPATE_IN(score, wins)]--> game:Game')).to.be.deep.equal([
                 {
                     rule: "relation",
                     out: {
@@ -107,7 +107,7 @@ describe('grypher', function () {
 
     describe('attributes', function () {
         it('should support property paths', function () {
-            expect(grypher.parse('--[CITIZEN_OF]--> place.country:Country')).to.be.deep.equal([
+            expect(parser.parse('--[CITIZEN_OF]--> place.country:Country')).to.be.deep.equal([
                 {
                     rule: "relation",
                     out: { name: "CITIZEN_OF" },
@@ -123,7 +123,7 @@ describe('grypher', function () {
         });
 
         it('should support attribute rewrite', function () {
-            expect(grypher.parse('--[CITIZEN_OF]--> place.country => country:Country')).to.be.deep.equal([
+            expect(parser.parse('--[CITIZEN_OF]--> place.country => country:Country')).to.be.deep.equal([
                 {
                     rule: "relation",
                     out: { name: "CITIZEN_OF" },
@@ -140,7 +140,7 @@ describe('grypher', function () {
         });
 
         it('should support attribute type constraints', function () {
-            expect(grypher.parse('+ firstName :String')).to.be.deep.equal([
+            expect(parser.parse('+ firstName :String')).to.be.deep.equal([
                 {
                     rule: "attribute",
                     attribute: {
@@ -157,7 +157,7 @@ describe('grypher', function () {
 
     describe('indices', function () {
         it('should support unique indices', function () {
-            expect(grypher.parse('UNIQUE(id)')).to.be.deep.equal([
+            expect(parser.parse('UNIQUE(id)')).to.be.deep.equal([
                 {
                     rule: "index",
                     index: [
@@ -169,7 +169,7 @@ describe('grypher', function () {
         });
 
         it('should support compound unique indices', function () {
-            expect(grypher.parse('UNIQUE(firstName, lastName)')).to.be.deep.equal([
+            expect(parser.parse('UNIQUE(firstName, lastName)')).to.be.deep.equal([
                 {
                     rule: "index",
                     index: [
@@ -184,7 +184,7 @@ describe('grypher', function () {
 
     describe('types', function () {
         it('should support types for attributes', function () {
-            expect(grypher.parse('UNIQUE(id:Int)')).to.be.deep.equal([
+            expect(parser.parse('UNIQUE(id:Int)')).to.be.deep.equal([
                 {
                     rule: "index",
                     index: [
@@ -202,7 +202,7 @@ describe('grypher', function () {
         });
 
         it('should treat class references as types', function () {
-            expect(grypher.parse('--> tweet:Tweet')).to.be.deep.equal([
+            expect(parser.parse('--> tweet:Tweet')).to.be.deep.equal([
                 {
                     rule: "flatten",
                     attribute: {
@@ -217,7 +217,7 @@ describe('grypher', function () {
         });
 
         it('should support array of type', function () {
-            expect(grypher.parse('--> comments:Comment[]')).to.be.deep.equal([
+            expect(parser.parse('--> comments:Comment[]')).to.be.deep.equal([
                 {
                     rule: "flatten",
                     attribute: {
@@ -236,7 +236,7 @@ describe('grypher', function () {
 
     describe('classes', function () {
         it('should support simple class declaration', function () {
-            expect(grypher.parse('def Tweet')).to.be.deep.equal([
+            expect(parser.parse('def Tweet')).to.be.deep.equal([
                 {
                     type: "class",
                     rule: "definition",
@@ -246,7 +246,7 @@ describe('grypher', function () {
         });
 
         it('should support class declaration with plain index', function () {
-            expect(grypher.parse('def HashTag(text)')).to.be.deep.equal([
+            expect(parser.parse('def HashTag(text)')).to.be.deep.equal([
                 {
                     type: "class",
                     name: "HashTag",
@@ -264,7 +264,7 @@ describe('grypher', function () {
         });
 
         it('should support class declaration with compound index', function () {
-            expect(grypher.parse('def Person(firstname, lastname)')).to.be.deep.equal([
+            expect(parser.parse('def Person(firstname, lastname)')).to.be.deep.equal([
                 {
                     type: "class",
                     name: "Person",
@@ -283,7 +283,7 @@ describe('grypher', function () {
         });
 
         it('should support paths for indices in class declarations', function () {
-            expect(grypher.parse('def Citizen(credentials.passport.number)')).to.be.deep.equal([
+            expect(parser.parse('def Citizen(credentials.passport.number)')).to.be.deep.equal([
                 {
                     type: "class",
                     name: "Citizen",
@@ -301,7 +301,7 @@ describe('grypher', function () {
         });
 
         it('should support array destructing for index at class definition', function () {
-            expect(grypher.parse('def Location(coordinates[longitude, latitude])')).to.be.deep.equal([
+            expect(parser.parse('def Location(coordinates[longitude, latitude])')).to.be.deep.equal([
                 {
                     type: "class",
                     name: "Location",
@@ -325,7 +325,7 @@ describe('grypher', function () {
         });
 
         it('should support class declaration with multiple rules', function () {
-            expect(grypher.parse('def User(passport.id) {' +
+            expect(parser.parse('def User(passport.id) {' +
                 '    --[CHILD_OF]--> father:Person' +
                 '}')).to.be.deep.equal([
                     {
@@ -358,7 +358,7 @@ describe('grypher', function () {
 
         describe('enumerations', function () {
             it('should be defined by array syntax', function () {
-                expect(grypher.parse('def Coordinates [ longitude, latitude ]')).to.be.deep.equal([
+                expect(parser.parse('def Coordinates [ longitude, latitude ]')).to.be.deep.equal([
                     {
                         type: "class",
                         rule: "enumeration",
@@ -372,7 +372,7 @@ describe('grypher', function () {
             });
 
             it('should support rules definition for enumerations', function () {
-                expect(grypher.parse('def VendorCoordinates [ longitude, latitude, vendor ] {' +
+                expect(parser.parse('def VendorCoordinates [ longitude, latitude, vendor ] {' +
                     'UNIQUE(longitude, latitude, vendor.id)' +
                     '}')).to.be.deep.equal([
                     {
@@ -402,7 +402,7 @@ describe('grypher', function () {
 
         describe('inline declarations', function () {
             it('should support inline dummy class definitions', function () {
-                expect(grypher.parse('--[POPULATED_WITH]--> comment:Comment()')).to.be.deep.equal([
+                expect(parser.parse('--[POPULATED_WITH]--> comment:Comment()')).to.be.deep.equal([
                     {
                         rule: "relation",
                         out: { name: "POPULATED_WITH" },
@@ -420,7 +420,7 @@ describe('grypher', function () {
             });
 
             it('should support inline class definitions with indices', function () {
-                expect(grypher.parse('--[POPULATED_WITH]--> comment:Comment(id)')).to.be.deep.equal([
+                expect(parser.parse('--[POPULATED_WITH]--> comment:Comment(id)')).to.be.deep.equal([
                     {
                         rule: "relation",
                         out: { name: "POPULATED_WITH" },
