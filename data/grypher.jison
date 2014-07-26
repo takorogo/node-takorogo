@@ -74,15 +74,20 @@ rule
   | UNIQUE "(" keys ")"
     { $$ = { rule: 'index', index: $3, type: 'unique' }; }
   | ATTR attribute_with_type
-      { $$ = { rule: 'attribute', attribute: $2 }; }
-  | DEFINE class
-    { $$ = $2; $$.rule = 'definition'; }
-  | DEFINE class '[' properties ']'
-    { $$ = $2; $$.rule = 'enumeration'; $$.elements = $4; }
+    { $$ = { rule: 'attribute', attribute: $2 }; }
+  | class_definition
+    { $$ = $1; }
   | rule '{' rules '}'
     { $$ = $1; $$.rules = $$.rules = $3.concat($$.rules || []); }
   | RELATION_OUT attribute
-      { $$ = { rule: 'flatten', attribute: $2 }; }
+    { $$ = { rule: 'flatten', attribute: $2 }; }
+  ;
+
+class_definition
+  : DEFINE class
+    { $$ = $2; $$.rule = 'definition'; }
+  | DEFINE class '[' properties ']'
+    { $$ = $2; $$.rule = 'enumeration'; $$.elements = $4; }
   ;
 
 relation
