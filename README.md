@@ -6,7 +6,7 @@ Grypher to JSON parser for Node.js
 [![build status](https://travis-ci.org/Sitin/node-grypher.svg)](http://travis-ci.org/Sitin/node-grypher)
 [![Coverage Status](https://img.shields.io/coveralls/Sitin/node-grypher.svg)](https://coveralls.io/r/Sitin/node-grypher)
 [![NPM version](https://badge.fury.io/js/grypher.svg)](http://badge.fury.io/js/grypher)
-[![Dependency Status](https://david-dm.org/Sitin/node-grypher.png)](https://david-dm.org/Sitin/node-grypher)
+[![Dependency Status](https://david-dm.org/Sitin/node-grypher.svg)](https://david-dm.org/Sitin/node-grypher)
 [![devDependency Status](https://david-dm.org/Sitin/node-grypher/dev-status.svg)](https://david-dm.org/Sitin/node-grypher#info=devDependencies)
 
 Installation
