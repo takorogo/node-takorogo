@@ -43,6 +43,17 @@ module.exports = function (grunt) {
                 src: ['test/*.e2e.js']
             }
         },
+        copy: {
+            sources: {
+                files: [
+                    { expand: true, src: ['**'], cwd: 'src/', dest: 'lib/' }
+                ],
+                mode: true
+            }
+        },
+        clean: {
+            lib: ['lib/']
+        },
         watch: {
             js: {
                 files: ['**/*.js', 'data/*.jison', 'test/fixtures/*.*', '!node_modules/**/*.js'],
@@ -63,10 +74,13 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-mocha-cov');
     grunt.loadNpmTasks('grunt-release');
     grunt.loadNpmTasks('grunt-execute');
+    grunt.loadNpmTasks('grunt-contrib-copy');
+    grunt.loadNpmTasks('grunt-contrib-clean');
 
+    grunt.registerTask('compile', ['clean:lib', 'jison', 'copy:sources']);
     grunt.registerTask('e2e', ['execute:e2e']);
-    grunt.registerTask('test', ['jshint', 'jison', 'mochacov:test', 'e2e', 'watch']);
-    grunt.registerTask('ci', ['jshint', 'jison', mochaCoverageTask, 'e2e']);
+    grunt.registerTask('test', ['jshint', 'compile', 'mochacov:test', 'e2e', 'watch']);
+    grunt.registerTask('ci', ['jshint', 'compile', mochaCoverageTask, 'e2e']);
     grunt.registerTask('default', ['test']);
     grunt.registerTask('publish', ['ci', 'release']);
 };
