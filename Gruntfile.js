@@ -35,7 +35,7 @@ module.exports = function (grunt) {
                 }
             },
             options: {
-                files: ['test/**/*.js']
+                files: ['test/**/*.test.js']
             }
         },
         watch: {
