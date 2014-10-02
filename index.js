@@ -3,4 +3,4 @@ var
     postprocessor = require('./lib/postprocessor');
 
 
-module.exports = postprocessor(parser);
+module.exports = postprocessor.wrap(parser);
