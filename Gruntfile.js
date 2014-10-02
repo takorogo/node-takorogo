@@ -38,6 +38,11 @@ module.exports = function (grunt) {
                 files: ['test/**/*.test.js']
             }
         },
+        execute: {
+            e2e: {
+                src: ['test/*.e2e.js']
+            }
+        },
         watch: {
             js: {
                 files: ['**/*.js', 'data/*.jison', 'test/fixtures/*.*', '!node_modules/**/*.js'],
@@ -57,8 +62,11 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-mocha-cov');
     grunt.loadNpmTasks('grunt-release');
-    grunt.registerTask('test', ['jshint', 'jison', 'mochacov:test', 'watch']);
-    grunt.registerTask('ci', ['jshint', 'jison', mochaCoverageTask]);
+    grunt.loadNpmTasks('grunt-execute');
+
+    grunt.registerTask('e2e', ['execute:e2e']);
+    grunt.registerTask('test', ['jshint', 'jison', 'mochacov:test', 'e2e', 'watch']);
+    grunt.registerTask('ci', ['jshint', 'jison', mochaCoverageTask, 'e2e']);
     grunt.registerTask('default', ['test']);
     grunt.registerTask('publish', ['ci', 'release']);
 };
