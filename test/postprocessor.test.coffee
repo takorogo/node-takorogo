@@ -19,7 +19,7 @@ describe 'postprocessor', () ->
     it 'should export Postprocessor class', () ->
         expect(Postprocessor).to.be.a('function')
 
-    it.only 'should wrap parser', () ->
+    it 'should wrap parser', () ->
         spy = sinon.spy(parser, 'parse')
         postprocessor = new Postprocessor(parser)
 
