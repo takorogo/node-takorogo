@@ -1,6 +1,6 @@
 {
   "name": "grypher",
-  "version": "0.0.1-8",
+  "version": "0.0.1-9",
   "description": "Grypher to JSON parser for Node.js",
   "main": "index.js",
   "scripts": {
