@@ -3,6 +3,7 @@
 'use strict'
 
 
+_ = require 'lodash'
 utils = require './utils'
 
 
@@ -31,47 +32,54 @@ class Postprocessor
     # @return [Object] JSON Schema
     #
     postprocess: (data) ->
-        data.map (item) =>
-            if item.type?
-                switch item.type
-                    when 'class' then @processClass(item)
-                    else item
-            item
+        @processRules(data)
+
+    #
+    # Converts enumeration into JSON Schema object definition.
+    #
+    # @param [Object] enumeration raw definition of enumeration
+    # @return [Object] JSON Schema definition
+    #
+    processEnumeration: (enumeration) =>
+        @processClass(enumeration)
 
     #
     # Converts class into JSON Schema object definition.
     #
-    # @param [Object] item raw definition of class
+    # @param [Object] klass raw definition of class
     # @return [Object] JSON Schema definition
     #
-    processClass: (item) =>
-        if item.rules? and item.rules.length > 0
-            @processRules(item)
-        item
+    processClass: (klass) =>
+        if klass.rules? and klass.rules.length > 0
+            @processRules(klass.rules, klass)
+
+        _.omit(klass, ['rules', 'rule'])
 
     #
-    # Converts rules for item into JSON Schema object definition.
+    # Converts rules for context into JSON Schema object definition.
     #
-    # @param [Object] item raw definition of rules owner
+    # @param [Array<Object>] rules raw definition of rules owner
+    # @param [Object] ctx context for rules
     # @return [Object] JSON Schema definition
     #
-    processRules: (item) =>
-        item.rules = item.rules.filter (rule) =>
+    processRules: (rules, ctx={}) =>
+        rules.forEach (rule) =>
             switch rule.rule
+                when 'definition'
+                    utils.addAsObjectMember(ctx, 'definitions', rule.title, @processClass(rule))
+                when 'enumeration'
+                    utils.addAsObjectMember(ctx, 'definitions', rule.title, @processEnumeration(rule))
                 when 'index'
-                    utils.pushAsArrayItem(item, 'indexes', @processIndex(rule))
-                    false
+                    utils.pushAsArrayItem(ctx, 'indexes', @processIndex(rule))
                 when 'attribute'
-                    utils.addAsObjectMember(item, 'properties', rule.attribute.name, @processProperty(rule.attribute))
-                    false
+                    utils.addAsObjectMember(ctx, 'properties', rule.attribute.name, @processProperty(rule.attribute))
                 when 'relation'
-                    utils.addAsObjectMember(item, 'relations', rule.attribute.name, @processRelation(rule))
-                    false
+                    utils.addAsObjectMember(ctx, 'relations', rule.attribute.name, @processRelation(rule))
                 when 'link'
-                    utils.addAsObjectMember(item, 'links', rule.attribute.name, @processLink(rule))
-                    false
+                    utils.addAsObjectMember(ctx, 'links', rule.attribute.name, @processLink(rule))
                 else
-                    true
+                    throw new Error("Unrecognized Grypher rule #{rule.rule}.")
+        ctx
 
     #
     # Converts index definition to JSON Schema entry.
@@ -79,7 +87,8 @@ class Postprocessor
     # @param [Object] index raw definition of index
     # @return [Object] JSON Schema definition
     #
-    processIndex: (index) -> index
+    processIndex: (index) ->
+        index.index.map (field) -> field.name
 
     #
     # Converts property definition to JSON Schema entry.

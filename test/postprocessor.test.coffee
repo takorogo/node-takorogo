@@ -30,3 +30,21 @@ describe 'postprocessor', () ->
         expect(spy).have.been.calledWith(tweetRules)
 
         spy.restore()
+
+
+    describe 'classes', () ->
+
+
+    describe 'enumerations', () ->
+
+
+    describe 'indexes', () ->
+
+
+    describe 'relations', () ->
+
+
+    describe 'properties', () ->
+
+
+    describe 'links', () ->

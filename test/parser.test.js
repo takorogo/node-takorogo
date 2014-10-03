@@ -45,8 +45,8 @@ describe('parser', function () {
                     attribute: {
                         name: "spam",
                         type: {
-                            type: "class",
-                            name: "Spam"
+                            type: "object",
+                            title: "Spam"
                         }
                     }
                 }
@@ -61,8 +61,8 @@ describe('parser', function () {
                     attribute: {
                         name: "eggs",
                         type: {
-                            type: "class",
-                            name: "Eggs"
+                            type: "object",
+                            title: "Eggs"
                         }
                     }
                 }
@@ -78,8 +78,8 @@ describe('parser', function () {
                     attribute: {
                         name: "spam",
                         type: {
-                            type: "class",
-                            name: "Spam"
+                            type: "object",
+                            title: "Spam"
                         }
                     }
                 }
@@ -100,8 +100,8 @@ describe('parser', function () {
                     attribute: {
                         name: "game",
                         type: {
-                            type: "class",
-                            name: "Game"
+                            type: "object",
+                            title: "Game"
                         }
                     }
                 }
@@ -118,8 +118,8 @@ describe('parser', function () {
                     attribute: {
                         name: "place.country",
                         type: {
-                            type: "class",
-                            name: "Country"
+                            type: "object",
+                            title: "Country"
                         }
                     }
                 }
@@ -134,8 +134,8 @@ describe('parser', function () {
                     attribute: {
                         name: "country",
                         type: {
-                            type: "class",
-                            name: "Country"
+                            type: "object",
+                            title: "Country"
                         },
                         aliasOf: { name: "place.country"}
                     }
@@ -150,8 +150,8 @@ describe('parser', function () {
                     attribute: {
                         name: "firstName",
                         type: {
-                            type: "class",
-                            name: "String"
+                            type: "object",
+                            title: "String"
                         }
                     }
                 }
@@ -195,8 +195,8 @@ describe('parser', function () {
                         {
                             name: "id",
                             type: {
-                                type: "class",
-                                name: "Int"
+                                type: "object",
+                                title: "Int"
                             }
                         }
                     ],
@@ -213,8 +213,8 @@ describe('parser', function () {
                     attribute: {
                         name: "tweet",
                         type: {
-                            type: "class",
-                            name: "Tweet"
+                            type: "object",
+                            title: "Tweet"
                         }
                     }
                 }
@@ -229,8 +229,8 @@ describe('parser', function () {
                     attribute: {
                         name: "comments",
                         type: {
-                            type: "class",
-                            name: "Comment",
+                            type: "object",
+                            title: "Comment",
                             isArrayOf: true,
                             arrayDepth: 1
                         }
@@ -244,9 +244,9 @@ describe('parser', function () {
         it('should support simple class declaration', function () {
             expect(parser.parse('def Tweet')).to.be.deep.equal([
                 {
-                    type: "class",
+                    type: "object",
                     rule: "definition",
-                    name: "Tweet"
+                    title: "Tweet"
                 }
             ]);
         });
@@ -254,8 +254,8 @@ describe('parser', function () {
         it('should support class declaration with plain index', function () {
             expect(parser.parse('def HashTag(text)')).to.be.deep.equal([
                 {
-                    type: "class",
-                    name: "HashTag",
+                    type: "object",
+                    title: "HashTag",
                     rules: [
                         {
                             rule: "index",
@@ -272,8 +272,8 @@ describe('parser', function () {
         it('should support class declaration with compound index', function () {
             expect(parser.parse('def Person(firstname, lastname)')).to.be.deep.equal([
                 {
-                    type: "class",
-                    name: "Person",
+                    type: "object",
+                    title: "Person",
                     rules: [
                         {
                             rule: "index",
@@ -291,8 +291,8 @@ describe('parser', function () {
         it('should support paths for indices in class declarations', function () {
             expect(parser.parse('def Citizen(credentials.passport.number)')).to.be.deep.equal([
                 {
-                    type: "class",
-                    name: "Citizen",
+                    type: "object",
+                    title: "Citizen",
                     rules: [
                         {
                             rule: "index",
@@ -309,8 +309,8 @@ describe('parser', function () {
         it('should support array destructing for index at class definition', function () {
             expect(parser.parse('def Location(coordinates[longitude, latitude])')).to.be.deep.equal([
                 {
-                    type: "class",
-                    name: "Location",
+                    type: "object",
+                    title: "Location",
                     rules: [
                         {
                             rule: "index",
@@ -335,8 +335,8 @@ describe('parser', function () {
                 '    --[CHILD_OF]--> father:Person' +
                 '}')).to.be.deep.equal([
                     {
-                        type: "class",
-                        name: "User",
+                        type: "object",
+                        title: "User",
                         rules: [
                             {
                                 rule: "relation",
@@ -344,8 +344,8 @@ describe('parser', function () {
                                 attribute: {
                                     name: "father",
                                     type: {
-                                        type: "class",
-                                        name: "Person"
+                                        type: "object",
+                                        title: "Person"
                                     }
                                 }
                             },
@@ -366,9 +366,9 @@ describe('parser', function () {
             it('should be defined by array syntax', function () {
                 expect(parser.parse('def Coordinates [ longitude, latitude ]')).to.be.deep.equal([
                     {
-                        type: "class",
+                        type: "object",
                         rule: "enumeration",
-                        name: "Coordinates",
+                        title: "Coordinates",
                         elements: [
                             { name: "longitude" },
                             { name: "latitude" }
@@ -382,9 +382,9 @@ describe('parser', function () {
                     'UNIQUE(longitude, latitude, vendor.id)' +
                     '}')).to.be.deep.equal([
                     {
-                        type: "class",
+                        type: "object",
                         rule: "enumeration",
-                        name: "VendorCoordinates",
+                        title: "VendorCoordinates",
                         elements: [
                             { name: "longitude" },
                             { name: "latitude" },
@@ -415,8 +415,8 @@ describe('parser', function () {
                         attribute: {
                             name: "comment",
                             type: {
-                                type: "class",
-                                name: "Comment",
+                                type: "object",
+                                title: "Comment",
                                 rule: "definition",
                                 rules: []
                             }
@@ -433,8 +433,8 @@ describe('parser', function () {
                         attribute: {
                             name: "comment",
                             type: {
-                                type: "class",
-                                name: "Comment",
+                                type: "object",
+                                title: "Comment",
                                 rule: "definition",
                                 rules: [
                                     {

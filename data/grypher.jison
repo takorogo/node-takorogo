@@ -108,7 +108,7 @@ type
 
 class
   : SYMNAME
-    { $$ = { type: 'class', name: $1 }; }
+    { $$ = { type: 'object', title: $1 }; }
   | class '(' ')'
     { $$ = $1; $$.rules = []; $$.rule = 'definition'; }
   | class '(' keys ')'
