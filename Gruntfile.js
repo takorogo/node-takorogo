@@ -92,7 +92,7 @@ module.exports = function (grunt) {
         },
         watch: {
             all: {
-                files: ['**/*.js', '**.*.coffee', 'data/*.jison', 'test/fixtures/*.*', '!node_modules/**/*.js', '!lib/**/*.js'],
+                files: ['**/*.js', '**/*.coffee', 'data/*.jison', 'test/fixtures/*.*', '!node_modules/**/*.js', '!lib/**/*.js'],
                 tasks: ['default'] ,
                 options: {
                     nospawn: true
