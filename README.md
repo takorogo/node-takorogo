@@ -104,7 +104,27 @@ def :Person {
 }        
 ```
 
-Attention: attribute aliasing in types constraints are not supported yet. 
+Attention: attribute aliasing in types constraints are not supported yet.
+ 
+### Embedded objects 
+
+Embedded objects are stored inside the node. Mechanism depends on graph database engine.  
+
+
+### Unnamed relations (link)
+
+You can store unstructured embedded object as a link to node: 
+
+```grypher
+--> metadata
+```
+
+As for normal relations you can specify classes and arrays for links:
+ 
+```gypher
+--> tweet:Tweet
+--> comments:Comment[]
+```
 
 ### Indices
 

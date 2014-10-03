@@ -4,7 +4,15 @@
 
 var grypher = require('..'),
     fs = require('fs'),
-    tweetRules = fs.readFileSync(__dirname + '/fixtures/tweet.gry').toString();
+    tweetRules = fs.readFileSync(__dirname + '/fixtures/tweet.gry').toString(),
+    schema = grypher.parse(tweetRules),
+    tmpDir = __dirname + '/tmp';
 
 
-grypher.parse(tweetRules);
+// Create temporary directory if not exists
+if (!fs.existsSync(tmpDir)) {
+    fs.mkdirSync(tmpDir, 0744);
+}
+
+// Write JSON Schema of tweet
+fs.writeFileSync(tmpDir + '/tweet.schema.json', JSON.stringify(schema, null, "  "));

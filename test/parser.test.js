@@ -24,11 +24,15 @@ describe('parser', function () {
     });
 
     describe('relations', function () {
-        it('should support flattening of embedded objects', function () {
+        it('should support unnamed relations for embedded objects', function () {
             expect(parser.parse('-->metadata')).to.be.deep.equal([
                 {
-                    rule: "flatten",
-                    attribute: { name: "metadata" }
+                    rule: "link",
+                    out: true,
+                    attribute: {
+                        name: "metadata",
+                        type: "embedded"
+                    }
                 }
             ]);
         });
@@ -204,7 +208,8 @@ describe('parser', function () {
         it('should treat class references as types', function () {
             expect(parser.parse('--> tweet:Tweet')).to.be.deep.equal([
                 {
-                    rule: "flatten",
+                    rule: "link",
+                    out: true,
                     attribute: {
                         name: "tweet",
                         type: {
@@ -219,7 +224,8 @@ describe('parser', function () {
         it('should support array of type', function () {
             expect(parser.parse('--> comments:Comment[]')).to.be.deep.equal([
                 {
-                    rule: "flatten",
+                    rule: "link",
+                    out: true,
                     attribute: {
                         name: "comments",
                         type: {

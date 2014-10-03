@@ -80,7 +80,7 @@ rule
   | rule '{' rules '}'
     { $$ = $1; $$.rules = $$.rules = $3.concat($$.rules || []); }
   | RELATION_OUT attribute
-    { $$ = { rule: 'flatten', attribute: $2 }; }
+    { $$ = { rule: 'link', out: true, attribute: $2 }; $2.type = $2.type || "embedded"; }
   ;
 
 class_definition

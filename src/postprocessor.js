@@ -18,12 +18,21 @@
     function processClass(item) {
         if (item.rules !== 'undefined' && item.rules.length > 0) {
             item.rules = item.rules.filter(function (rule) {
-                switch (rule.type) {
+                switch (rule.rule) {
                     case 'index':
                         utils.pushAsArrayItem(item, 'indexes', processIndex(rule));
                         return false;
                     case "attribute":
-                        utils.addAsObjectMember(item, 'properties', rule.name, processProperty(rule));
+                        utils.addAsObjectMember(item, 'properties', rule.attribute.name,
+                            processProperty(rule.attribute));
+                        return false;
+                    case "relation":
+                        utils.addAsObjectMember(item, 'relations', rule.attribute.name,
+                            processRelation(rule));
+                        return false;
+                    case "link":
+                        utils.addAsObjectMember(item, 'links', rule.attribute.name,
+                            processLink(rule));
                         return false;
                 }
                 return true;
@@ -60,6 +69,15 @@
     }
 
     /**
+     * Converts link definition to JSON Schema entry.
+     * @param {Object} relation raw definition
+     * @returns {Object} JSON Schema definition
+     */
+    function processLink(relation) {
+        return relation;
+    }
+
+    /**
      * Processes whole raw output from jison parser to JSON Schema.
      * @param {*} data raw output from jison parser
      * @returns {*} JSON Schema
@@ -92,8 +110,9 @@
 
 
     module.exports.processRelation = processRelation;
-    module.exports.processClass = processIndex;
-    module.exports.processClass = processProperty;
+    module.exports.processLink = processLink;
+    module.exports.processIndex = processIndex;
+    module.exports.processProperty = processProperty;
     module.exports.processClass = processClass;
     module.exports.postprocess = postprocess;
     module.exports.wrap = wrap;
