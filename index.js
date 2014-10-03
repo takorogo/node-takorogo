@@ -1,6 +1,6 @@
 var
     parser = require('./lib/parser'),
-    postprocessor = require('./lib/postprocessor');
+    Postprocessor = require('./lib/postprocessor');
 
 
-module.exports = postprocessor.wrap(parser);
+module.exports = new Postprocessor(parser);
