@@ -120,7 +120,7 @@ module.exports = function (grunt) {
     grunt.registerTask('document', ['clean:doc', 'codo']);
     grunt.registerTask('e2e', ['execute:e2e']);
     grunt.registerTask('test', ['mochacov:test', 'e2e']);
-    grunt.registerTask('test-ci', ['mochaCoverageTask', 'e2e']);
+    grunt.registerTask('test-ci', [mochaCoverageTask, 'e2e']);
     grunt.registerTask('ci', ['compile', 'test-ci']);
     grunt.registerTask('default', ['compile', 'test', 'document', 'watch']);
     grunt.registerTask('publish', ['ci', 'release']);
