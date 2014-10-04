@@ -11,6 +11,8 @@ utils = require './utils'
 # @class Postprocessor
 #
 class Postprocessor
+    @supportedRules = ['definition', 'enumeration', 'index', 'attribute', 'relation', 'link']
+
     #
     # @param [Object] parser
     #
@@ -38,22 +40,32 @@ class Postprocessor
     # Converts enumeration into JSON Schema object definition.
     #
     # @param [Object] enumeration raw definition of enumeration
+    # @param [Object] ctx context for enumeration
     # @return [Object] JSON Schema definition
     #
-    processEnumeration: (enumeration) =>
-        @processClass(enumeration)
+    processEnumeration: (enumeration, ctx={}) =>
+        @processDefinition(enumeration, ctx)
 
     #
-    # Converts class into JSON Schema object definition.
+    # Converts class rule into JSON Schema object definition.
     #
     # @param [Object] klass raw definition of class
-    # @return [Object] JSON Schema definition
+    # @param [Object] ctx context for class
+    # @return [Object] context with class JSON Schema definition
     #
-    processClass: (klass) =>
+    processDefinition: (klass, ctx={}) =>
+        # Process class rules
         if klass.rules? and klass.rules.length > 0
             @processRules(klass.rules, klass)
 
-        _.omit(klass, ['rules', 'rule'])
+        # Strip verbose fields
+        klass = _.omit(klass, ['rules', 'rule'])
+
+        # Add class to context
+        utils.addAsObjectMember(ctx, 'definitions', klass.title, klass)
+
+        # Return context
+        ctx
 
     #
     # Converts rules for context into JSON Schema object definition.
@@ -64,21 +76,10 @@ class Postprocessor
     #
     processRules: (rules, ctx={}) =>
         rules.forEach (rule) =>
-            switch rule.rule
-                when 'definition'
-                    utils.addAsObjectMember(ctx, 'definitions', rule.title, @processClass(rule))
-                when 'enumeration'
-                    utils.addAsObjectMember(ctx, 'definitions', rule.title, @processEnumeration(rule))
-                when 'index'
-                    @processIndex(rule, ctx)
-                when 'attribute'
-                    utils.addAsObjectMember(ctx, 'properties', rule.attribute.name, @processProperty(rule.attribute))
-                when 'relation'
-                    utils.addAsObjectMember(ctx, 'relations', rule.attribute.name, @processRelation(rule))
-                when 'link'
-                    utils.addAsObjectMember(ctx, 'links', rule.attribute.name, @processLink(rule))
-                else
-                    throw new Error("Unrecognized Grypher rule #{rule.rule}.")
+            if (rule.rule in Postprocessor.supportedRules)
+                method = "process#{utils.capitalizeFirst(rule.rule)}"
+                @[method](rule, ctx)
+            else throw new Error("Unrecognized Grypher rule #{rule.rule}.")
         ctx
 
     #
@@ -96,7 +97,8 @@ class Postprocessor
         index.key = index.key.map (field) =>
             # Save keys as properties if they specified in extended format
             if field.type?
-                utils.addAsObjectMember(ctx, 'properties', field.name, @processProperty(field))
+                # Note that field should be wrapped with attribute rule
+                @processAttribute(attribute: field, ctx)
             # We need only attribute names here
             field.name
 
@@ -110,25 +112,37 @@ class Postprocessor
     # Converts property definition to JSON Schema entry.
     #
     # @param [Object] property raw definition of property
-    # @return [Object] JSON Schema definition
+    # @param [Object] ctx context for property
+    # @return [Object] property context JSON Schema definition
     #
-    processProperty: (property) -> property
+    processAttribute: (property, ctx={}) ->
+        # Add property to context and return context
+        utils.addAsObjectMember(ctx, 'properties', property.attribute.name, property.attribute)
+        ctx
 
     #
     # Converts relation definition to JSON Schema entry.
     #
     # @param [Object] relation raw definition of relation
-    # @return [Object] JSON Schema definition
+    # @param [Object] ctx context for relation
+    # @return [Object] relation context JSON Schema definition
     #
-    processRelation: (relation) -> relation
+    processRelation: (relation, ctx={}) ->
+        # Add relation to context and return context
+        utils.addAsObjectMember(ctx, 'relations', relation.attribute.name, relation)
+        ctx
 
     #
     # Converts link definition to JSON Schema entry.
     #
     # @param [Object] link raw definition of link
-    # @return [Object] JSON Schema definition
+    # @param [Object] ctx context for link
+    # @return [Object] link context JSON Schema definition
     #
-    processLink: (link) -> link
+    processLink: (link, ctx={}) ->
+        # Add link to context and return context
+        utils.addAsObjectMember(ctx, 'links', link.attribute.name, link)
+        ctx
 
 
 module.exports = Postprocessor
