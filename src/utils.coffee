@@ -25,3 +25,12 @@ module.exports.pushAsArrayItem = (ctx, container, item) ->
 module.exports.addAsObjectMember = (ctx, container, key, value) ->
     ctx[container] = ctx[container] || {}
     ctx[container][key] = value
+
+#
+# Capitalizes first letter
+#
+# @param [String] string
+# @return [String]
+#
+module.exports.capitalizeFirst = (string) ->
+    string.charAt(0).toUpperCase() + string.slice(1)
