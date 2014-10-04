@@ -88,7 +88,7 @@ class Postprocessor
     # @return [Object] JSON Schema definition
     #
     processIndex: (index) ->
-        index.index.map (field) -> field.name
+        index.key.map (field) -> field.name
 
     #
     # Converts property definition to JSON Schema entry.

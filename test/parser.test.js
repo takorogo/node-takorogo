@@ -164,7 +164,7 @@ describe('parser', function () {
             expect(parser.parse('UNIQUE(id)')).to.be.deep.equal([
                 {
                     rule: "index",
-                    index: [
+                    key: [
                         { name: "id" }
                     ],
                     type: "unique"
@@ -176,7 +176,7 @@ describe('parser', function () {
             expect(parser.parse('UNIQUE(firstName, lastName)')).to.be.deep.equal([
                 {
                     rule: "index",
-                    index: [
+                    key: [
                         { name: "firstName" },
                         { name: "lastName" }
                     ],
@@ -191,7 +191,7 @@ describe('parser', function () {
             expect(parser.parse('UNIQUE(id:Int)')).to.be.deep.equal([
                 {
                     rule: "index",
-                    index: [
+                    key: [
                         {
                             name: "id",
                             type: {
@@ -259,7 +259,7 @@ describe('parser', function () {
                     rules: [
                         {
                             rule: "index",
-                            index: [
+                            key: [
                                 { name: "text" }
                             ],
                             type: "unique"
@@ -277,7 +277,7 @@ describe('parser', function () {
                     rules: [
                         {
                             rule: "index",
-                            index: [
+                            key: [
                                 { name: "firstname" },
                                 { name: "lastname" }
                             ],
@@ -296,7 +296,7 @@ describe('parser', function () {
                     rules: [
                         {
                             rule: "index",
-                            index: [
+                            key: [
                                 { name: "credentials.passport.number" }
                             ],
                             type: "unique"
@@ -314,7 +314,7 @@ describe('parser', function () {
                     rules: [
                         {
                             rule: "index",
-                            index: [
+                            key: [
                                 {
                                     name: "coordinates",
                                     keys: [
@@ -351,7 +351,7 @@ describe('parser', function () {
                             },
                             {
                                 rule: "index",
-                                index: [
+                                key: [
                                     { name: "passport.id" }
                                 ],
                                 type: "unique"
@@ -393,7 +393,7 @@ describe('parser', function () {
                         rules: [
                             {
                                 rule: "index",
-                                index: [
+                                key: [
                                     { name: "longitude" },
                                     { name: "latitude" },
                                     { name :"vendor.id"}
@@ -439,7 +439,7 @@ describe('parser', function () {
                                 rules: [
                                     {
                                         rule: "index",
-                                        index: [
+                                        key: [
                                             { name: "id" }
                                         ],
                                         type: "unique"

@@ -72,7 +72,7 @@ rule
   : relation attribute
     { $$ = $1; $$.attribute = $2; }
   | UNIQUE "(" keys ")"
-    { $$ = { rule: 'index', index: $3, type: 'unique' }; }
+    { $$ = { rule: 'index', key: $3, type: 'unique' }; }
   | ATTR attribute_with_type
     { $$ = { rule: 'attribute', attribute: $2 }; }
   | class_definition
@@ -112,7 +112,7 @@ class
   | class '(' ')'
     { $$ = $1; $$.rules = []; $$.rule = 'definition'; }
   | class '(' keys ')'
-    { $$ = $1; $$.rules = [{ rule: 'index', index: $3, type: 'unique' }]; $$.rule = 'definition'; }
+    { $$ = $1; $$.rules = [{ rule: 'index', key: $3, type: 'unique' }]; $$.rule = 'definition'; }
   ;
 
 relation_obj
