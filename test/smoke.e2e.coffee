@@ -14,4 +14,4 @@ tmpDir = "#{__dirname}/tmp"
 if !fs.existsSync(tmpDir) then fs.mkdirSync(tmpDir, 0o744)
 
 # Write JSON Schema of tweet
-fs.writeFileSync("#{tmpDir}/tweet.schema.json", JSON.stringify(schema, null, "  "))
+fs.writeFileSync("#{tmpDir}/tweet.schema.json", JSON.stringify(schema, null, "    "))
