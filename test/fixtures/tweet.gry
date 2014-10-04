@@ -16,9 +16,7 @@ def Tweet {
 }
 
 # Just a point
-def Coordinates [ longitude, latitude ] {
-  UNIQUE(longitude: Double, latitude: Double)
-}
+def Coordinates(longitude: Float, latitude: Float) [ longitude, latitude ]
 
 def Location(coordinates:Coordinates)  // Simply a wrapper for coordinates
 
