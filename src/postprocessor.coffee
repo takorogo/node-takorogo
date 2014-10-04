@@ -70,7 +70,7 @@ class Postprocessor
                 when 'enumeration'
                     utils.addAsObjectMember(ctx, 'definitions', rule.title, @processEnumeration(rule))
                 when 'index'
-                    utils.pushAsArrayItem(ctx, 'indexes', @processIndex(rule))
+                    @processIndex(rule, ctx)
                 when 'attribute'
                     utils.addAsObjectMember(ctx, 'properties', rule.attribute.name, @processProperty(rule.attribute))
                 when 'relation'
@@ -85,10 +85,26 @@ class Postprocessor
     # Converts index definition to JSON Schema entry.
     #
     # @param [Object] index raw definition of index
-    # @return [Object] JSON Schema definition
+    # @param [Object] ctx context for index
+    # @return [Object] context with index JSON Schema definition
     #
-    processIndex: (index) ->
-        index.key.map (field) -> field.name
+    processIndex: (index, ctx={}) ->
+        # Strip verbose fields
+        index = _.omit(index, ['rule'])
+
+        # Process keys
+        index.key = index.key.map (field) =>
+            # Save keys as properties if they specified in extended format
+            if field.type?
+                utils.addAsObjectMember(ctx, 'properties', field.name, @processProperty(field))
+            # We need only attribute names here
+            field.name
+
+        # Add index to context
+        utils.pushAsArrayItem(ctx, 'indexes', index)
+
+        # Return context
+        ctx
 
     #
     # Converts property definition to JSON Schema entry.
