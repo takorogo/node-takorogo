@@ -175,8 +175,16 @@ class Postprocessor
     # @return [Object] link context JSON Schema definition
     #
     processLink: (link, ctx={}) ->
+        # Process attribute
+        @processAttribute(attribute: link.attribute, ctx)
+
+        link = _.merge _.omit(link, ['rule', 'attribute']),
+            property: link.attribute.name
+
         # Add link to context and return context
-        utils.addAsObjectMember(ctx, 'links', link.attribute.name, link)
+        utils.addAsObjectMember(ctx, 'links', link.property, link)
+
+        # Return context
         ctx
 
 
