@@ -119,7 +119,7 @@ relation_obj
   : SYMNAME
     { $$ = {name: $1} }
   | relation_obj '(' keys ')'
-      { $$ = $1; $$.keys = $3 }
+      { $$ = $1; $$.attributes = $3 }
   ;
   
 attribute

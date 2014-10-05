@@ -90,7 +90,7 @@ describe('parser', function () {
                     rule: "relation",
                     out: {
                         name: "PARTICIPATE_IN",
-                        keys: [
+                        attributes: [
                             { name: "score" },
                             { name: "wins" }
                         ]
