@@ -261,7 +261,8 @@ describe('parser', function () {
                             type: "unique"
                         }
                     ],
-                    rule: "definition"}
+                    rule: "definition"
+                }
             ]);
         });
 
