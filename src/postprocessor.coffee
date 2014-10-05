@@ -44,7 +44,32 @@ class Postprocessor
     # @return [Object] JSON Schema definition
     #
     processEnumeration: (enumeration, ctx={}) =>
-        @processDefinition(enumeration, ctx)
+        # Save elements
+        elements = enumeration.elements.map (element) -> element.name
+        destructuredClassTitle = "__#{enumeration.title}__"
+
+        # Destructured class definition
+        klass = _.merge _.omit(enumeration, ['elements']),
+            title: destructuredClassTitle
+            additionalProperties: false
+            required: elements
+
+        # New enumeration definition
+        enumeration =
+            type: 'array'
+            title: enumeration.title
+            elements: elements
+            minItems: elements.length
+            maxItems: elements.length
+            destructuredTo: $ref: "definitions/#{destructuredClassTitle}"
+
+        # Add class to definition to local definitions
+        @processDefinition(klass, enumeration)
+
+        # Add enumeration to context
+        utils.addAsObjectMember(ctx, 'definitions', enumeration.title, enumeration)
+
+        ctx
 
     #
     # Converts class rule into JSON Schema object definition.
