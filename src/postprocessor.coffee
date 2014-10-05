@@ -10,13 +10,32 @@ utils = require './utils'
 #
 # @class Postprocessor
 #
+# @todo Put references into manipulated object
+#
 class Postprocessor
     @supportedRules = ['definition', 'enumeration', 'index', 'attribute', 'relation', 'link']
+
+    #
+    # Returns absolute reference path for class
+    #
+    # @param [String] className name of the class
+    # @param [Object] ctx context for class
+    # @return [String] context path for class
+    #
+    @absoluteReferencePathForClass: (className, ctx) ->
+        "#{ctx.__path}/definitions/#{className}"
 
     #
     # @param [Object] parser
     #
     constructor: (@parser) ->
+
+    #
+    # Cleans up references
+    #
+    cleanRefs: () ->
+        @typeRefs = []
+        @typeDefs = {}
 
     #
     # Executes jison parser and converts it's result to JSON Schema
@@ -34,7 +53,9 @@ class Postprocessor
     # @return [Object] JSON Schema
     #
     postprocess: (data) ->
-        @processRules(data)
+        @cleanRefs()
+        @processRules(data, __path: '#')
+        @processTypeReferences()
 
     #
     # Converts enumeration into JSON Schema object definition.
@@ -56,18 +77,24 @@ class Postprocessor
 
         # New enumeration definition
         enumeration =
+            __path: @constructor.absoluteReferencePathForClass(enumeration.title, ctx)
             type: 'array'
             title: enumeration.title
             elements: elements
             minItems: elements.length
             maxItems: elements.length
-            destructuredTo: $ref: "definitions/#{destructuredClassTitle}"
+
+        enumeration.destructuredTo =
+            $ref: @constructor.absoluteReferencePathForClass(destructuredClassTitle, enumeration)
 
         # Add class to definition to local definitions
         @processDefinition(klass, enumeration)
 
         # Add enumeration to context
         utils.addAsObjectMember(ctx, 'definitions', enumeration.title, enumeration)
+
+        # Register enumeration definition for later referencing
+        @registerDefinition enumeration
 
         ctx
 
@@ -79,6 +106,9 @@ class Postprocessor
     # @return [Object] context with class JSON Schema definition
     #
     processDefinition: (klass, ctx={}) =>
+        # Set path for class
+        klass.__path = @constructor.absoluteReferencePathForClass(klass.title, ctx)
+
         # Process class rules
         if klass.rules? and klass.rules.length > 0
             @processRules(klass.rules, klass)
@@ -88,6 +118,9 @@ class Postprocessor
 
         # Add class to context
         utils.addAsObjectMember(ctx, 'definitions', klass.title, klass)
+
+        # Register type definition for later referencing
+        @registerDefinition klass
 
         # Return context
         ctx
@@ -100,7 +133,7 @@ class Postprocessor
     # @return [Object] JSON Schema definition of rule
     #
     processRule: (rule, ctx) ->
-        if (rule.rule in Postprocessor.supportedRules)
+        if (rule.rule in @constructor.supportedRules)
             method = "process#{utils.capitalizeFirst(rule.rule)}"
             @[method](rule, ctx)
         else throw new Error("Unrecognized Grypher rule #{rule.rule}.")
@@ -172,10 +205,24 @@ class Postprocessor
     #
     # @param [Object] type reference of type
     # @param [Object] ctx referencing context
-    # @return [Object] referencing context
     #
     registerTypeReference: (type, ctx) ->
-        ctx
+        @typeRefs.push(type, ctx)
+
+    #
+    # Registers definition reference
+    #
+    # @param [Object] definition type definition schema
+    #
+    registerDefinition: (definition) ->
+        @typeDefs[definition.__path] = definition
+
+    #
+    # Processes type references
+    #
+    # @todo Implement type references processing
+    #
+    processTypeReferences: () ->
 
     #
     # Processes property type.
