@@ -153,8 +153,18 @@ class Postprocessor
     # @return [Object] relation context JSON Schema definition
     #
     processRelation: (relation, ctx={}) ->
+        # Process attribute
+        @processAttribute(attribute: relation.attribute, ctx)
+
+        # Create relation schema
+        relation = _.merge _.omit(relation, ['rule', 'attribute']),
+            #todo We need to get rid of ambiguity of `attribute` and `property` which are the same at this project.
+            property: relation.attribute.name
+
         # Add relation to context and return context
-        utils.addAsObjectMember(ctx, 'relations', relation.attribute.name, relation)
+        utils.addAsObjectMember(ctx, 'relations', relation.property, relation)
+
+        # Return context
         ctx
 
     #
