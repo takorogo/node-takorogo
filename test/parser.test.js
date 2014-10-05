@@ -28,10 +28,8 @@ describe('parser', function () {
             expect(parser.parse('-->metadata')).to.be.deep.equal([
                 {
                     rule: "link",
-                    out: true,
                     attribute: {
-                        name: "metadata",
-                        type: "embedded"
+                        name: "metadata"
                     }
                 }
             ]);
@@ -209,7 +207,6 @@ describe('parser', function () {
             expect(parser.parse('--> tweet:Tweet')).to.be.deep.equal([
                 {
                     rule: "link",
-                    out: true,
                     attribute: {
                         name: "tweet",
                         type: {
@@ -225,7 +222,6 @@ describe('parser', function () {
             expect(parser.parse('--> comments:Comment[]')).to.be.deep.equal([
                 {
                     rule: "link",
-                    out: true,
                     attribute: {
                         name: "comments",
                         type: {
