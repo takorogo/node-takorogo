@@ -93,6 +93,19 @@ class Postprocessor
         ctx
 
     #
+    # Processes passed rule with related method
+    #
+    # @param [Object] rule raw definition of rule
+    # @param [Object] ctx context for rule
+    # @return [Object] JSON Schema definition of rule
+    #
+    processRule: (rule, ctx) ->
+        if (rule.rule in Postprocessor.supportedRules)
+            method = "process#{utils.capitalizeFirst(rule.rule)}"
+            @[method](rule, ctx)
+        else throw new Error("Unrecognized Grypher rule #{rule.rule}.")
+
+    #
     # Converts rules for context into JSON Schema object definition.
     #
     # @param [Array<Object>] rules raw definition of rules owner
@@ -101,10 +114,7 @@ class Postprocessor
     #
     processRules: (rules, ctx={}) =>
         rules.forEach (rule) =>
-            if (rule.rule in Postprocessor.supportedRules)
-                method = "process#{utils.capitalizeFirst(rule.rule)}"
-                @[method](rule, ctx)
-            else throw new Error("Unrecognized Grypher rule #{rule.rule}.")
+            @processRule(rule, ctx)
         ctx
 
     #
@@ -141,8 +151,51 @@ class Postprocessor
     # @return [Object] property context JSON Schema definition
     #
     processAttribute: (property, ctx={}) ->
+        # Process alias if required
+        if property.attribute.aliasOf?
+            utils.addAsObjectMember(ctx, 'aliases', property.attribute.name, property.attribute.aliasOf.name)
+
+        # Create property schema
+        property = _.omit property.attribute, ['aliasOf']
+
+        # Process property type
+        @processPropertyType(property, ctx)
+
         # Add property to context and return context
-        utils.addAsObjectMember(ctx, 'properties', property.attribute.name, property.attribute)
+        utils.addAsObjectMember(ctx, 'properties', property.name, property)
+
+        # Return context
+        ctx
+
+    #
+    # Registers type reference
+    #
+    # @param [Object] type reference of type
+    # @param [Object] ctx referencing context
+    # @return [Object] referencing context
+    #
+    registerTypeReference: (type, ctx) ->
+        ctx
+
+    #
+    # Processes property type.
+    #
+    # @param [Object] property definition
+    # @param [Object] ctx context for property
+    # @return [Object] property context JSON Schema definition
+    #
+    processPropertyType: (property, ctx={}) ->
+        # Process property type inline declaration
+        if property.type?.rule?
+            @processRule property.type, ctx
+            property.type = _.pick(property.type, ['type', 'title'])
+
+        # Register reference for type
+        @registerTypeReference(property.type, ctx)
+
+        #todo Process array properties
+
+        # Return context
         ctx
 
     #
