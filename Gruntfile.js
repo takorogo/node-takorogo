@@ -37,6 +37,9 @@ module.exports = function (grunt) {
                 files: [
                     { expand: true, src: ['**.e2e.coffee'], cwd: 'test/', dest: 'test/', ext: '.e2e.cpl.js' }
                 ]
+            },
+            options: {
+                sourceMap: true
             }
 
         },
@@ -78,7 +81,8 @@ module.exports = function (grunt) {
         clean: {
             lib: ['lib/'],
             doc: ['doc/'],
-            test: ['test/**/*.cpl.js', 'test/tmp/']
+            test: ['test/**/*.cpl.js', 'test/tmp/'],
+            sourceMaps: ['**/*.js.map', '!node_modules/**/*.js']
         },
         codo: {
             options: {
@@ -116,7 +120,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-codo');
     grunt.loadNpmTasks('grunt-coffeelint');
 
-    grunt.registerTask('compile', ['clean:lib', 'clean:test', 'jshint', 'jison', 'coffeelint', 'clean:test', 'coffee', 'copy:sources']);
+    grunt.registerTask('compile', ['clean', 'jshint', 'jison', 'coffeelint', 'coffee', 'copy:sources']);
     grunt.registerTask('document', ['clean:doc', 'codo']);
     grunt.registerTask('e2e', ['execute:e2e']);
     grunt.registerTask('test', ['mochacov:test', 'e2e']);
