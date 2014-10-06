@@ -190,13 +190,14 @@ class Postprocessor
             utils.addAsObjectMember(ctx, 'aliases', property.attribute.name, property.attribute.aliasOf.name)
 
         # Create property schema
-        property = _.omit property.attribute, ['aliasOf']
+        name = property.attribute.name
+        property = _.omit property.attribute, ['aliasOf', 'name']
 
         # Process property type
         @processPropertyType(property, ctx)
 
         # Add property to context and return context
-        utils.addAsObjectMember(ctx, 'properties', property.name, property)
+        utils.addAsObjectMember(ctx, 'properties', name, property)
 
         # Return context
         ctx
