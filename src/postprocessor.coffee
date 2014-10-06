@@ -54,8 +54,9 @@ class Postprocessor
     #
     postprocess: (data) ->
         @cleanRefs()
-        @processRules(data, __path: '#')
-        @processTypeReferences()
+        schema = @processRules(data, __path: '#')
+        @resolveTypeReferences(schema)
+        schema
 
     #
     # Converts enumeration into JSON Schema object definition.
@@ -203,11 +204,11 @@ class Postprocessor
     #
     # Registers type reference
     #
-    # @param [Object] type reference of type
+    # @param [Object] property property that has a reference of type
     # @param [Object] ctx referencing context
     #
-    registerTypeReference: (type, ctx) ->
-        @typeRefs.push(type, ctx)
+    registerTypeReference: (property, ctx) ->
+        @typeRefs.push(property: property, ctx: ctx)
 
     #
     # Registers definition reference
@@ -218,11 +219,77 @@ class Postprocessor
         @typeDefs[definition.__path] = definition
 
     #
-    # Processes type references
+    # Finds JSON schema reference to specified type in the context
     #
-    # @todo Implement type references processing
+    # @param [String] name type name
+    # @param [Object] ctx type context
+    # @return [String|Boolean] JSON Schema reference or false
     #
-    processTypeReferences: () ->
+    findTypeReference: (name, ctx) ->
+        # Create reference for closest context path
+        $ref = @constructor.absoluteReferencePathForClass(name, ctx)
+
+        # Return reference if exists in context
+        if @typeDefs[$ref]?
+            $ref
+        # Or try to look higher in hierarchy
+        else
+            # Create new path dropping last position in current one
+            path = ctx.__path.split('/').slice(0, -1).join('/')
+            # Try to find definition in parent context
+            if path
+                #todo Rethink API to avoid path wrapping/unwrapping
+                @findTypeReference(name, __path: path)
+            # Or return false in nothing can be found on schema
+            else
+                false
+
+    #
+    # Resolves type reference
+    #
+    # @param [Object] property property that has a type reference
+    # @param [Object] unresolved container for unresolved types
+    #
+    resolveTypeReference: (property, unresolved) ->
+        # Type reference
+        ref = property.property
+
+        # Find reference to type
+        $ref = @findTypeReference(ref.type.title, property.ctx)
+
+        # Save reference if found
+        if $ref
+            ref.type.$ref = $ref
+        # Or assume that type is external to Schema
+        else
+            # Set type as it is
+            ref.type.type = ref.type.title
+            # Mark type as unresolved
+            unresolved[ref.type.title] = true
+
+        # Bubble up fields from type
+        _.merge(property.property, _.omit(ref.type, ['title']))
+
+    #
+    # Processes type references for schema
+    #
+    # @param [Object] schema JSON schema
+    # @return [Object] JSON schema
+    #
+    resolveTypeReferences: (schema) ->
+        # Create container for unresolved types
+        unresolved = {}
+
+        # Iterate over type references
+        @typeRefs.forEach (ref) =>
+            @resolveTypeReference(ref, unresolved)
+
+        # Save unresolved types to schema
+        unresolved = Object.keys(unresolved)
+        if unresolved.length > 0 then schema.unresolvedTypes = unresolved
+
+        # Return schema
+        schema
 
     #
     # Processes property type.
@@ -237,10 +304,10 @@ class Postprocessor
             @processRule property.type, ctx
             property.type = _.pick(property.type, ['type', 'title'])
 
-        # Register reference for type
-        @registerTypeReference(property.type, ctx)
+        #todo Process array properties here
 
-        #todo Process array properties
+        # Register reference for type
+        if property.type? then @registerTypeReference(property, ctx)
 
         # Return context
         ctx
