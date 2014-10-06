@@ -40,6 +40,11 @@
 "\n"                  return 'EOL'
 <<EOF>>               return 'EOF'
 
+"@main"               return 'MAIN'
+
+\@.*\n                return 'META'
+\@.*<<EOF>>           return 'META'
+
 #.*\n                 /* skip comments */
 //.*\n                /* skip comments */
 #.*<<EOF>>            /* skip comments */
@@ -75,12 +80,16 @@ rule
     { $$ = { rule: 'index', key: $3, type: 'unique' }; }
   | ATTR attribute_with_type
     { $$ = { rule: 'attribute', attribute: $2 }; }
+  | MAIN class_definition
+    { $$ = $2; $$.isMainDefinition = true; }
   | class_definition
-    { $$ = $1; }
+      { $$ = $1; }
   | rule '{' rules '}'
     { $$ = $1; $$.rules = $$.rules = $3.concat($$.rules || []); }
   | RELATION_OUT attribute
     { $$ = { rule: 'link', attribute: $2 }; }
+  | META
+    { meta = $1.match(/@(\w+) (.*)/) || []; $$ = { rule: 'meta', key: meta[1], value: meta[2] }; }
   ;
 
 class_definition

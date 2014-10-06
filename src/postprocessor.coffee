@@ -13,7 +13,9 @@ utils = require './utils'
 # @todo Put references into manipulated object
 #
 class Postprocessor
-    @supportedRules = ['definition', 'enumeration', 'index', 'attribute', 'relation', 'link']
+    @supportedRules = ['definition', 'enumeration', 'index', 'attribute', 'relation', 'link', 'meta']
+
+    @directMetadata = ['title', 'description']
 
     #
     # Returns absolute reference path for class
@@ -36,6 +38,7 @@ class Postprocessor
     cleanRefs: () ->
         @typeRefs = []
         @typeDefs = {}
+        @mainClass = false
 
     #
     # Executes jison parser and converts it's result to JSON Schema
@@ -70,11 +73,31 @@ class Postprocessor
         delete schema.__path
 
         # Remove context paths from type definitions
-        for key, def of @typeDefs
+        _.forEach @typeDefs, (def) ->
             delete def.__path
+
+        # Set main class if existed
+        if @mainClass then _.defaults schema, @mainClass
 
         # Return schema
         schema
+
+    #
+    # Converts meta statement into JSON Schema object definition.
+    #
+    # @param [Object] meta raw definition of enumeration
+    # @param [Object] ctx context for meta
+    # @return [Object] JSON Schema definition
+    #
+    processMeta: (meta, ctx={}) ->
+        # Save metadata directly into context
+        if meta.key in @constructor.directMetadata
+            ctx[meta.key] = meta.value
+        # Or store into `metadata` container
+        else
+            utils.addAsObjectMember(ctx, 'metadata', meta.key, meta.value)
+        # Return context
+        ctx
 
     #
     # Converts enumeration into JSON Schema object definition.
@@ -115,6 +138,7 @@ class Postprocessor
         # Register enumeration definition for later referencing
         @registerDefinition enumeration
 
+        # Return context
         ctx
 
     #
@@ -132,8 +156,14 @@ class Postprocessor
         if klass.rules? and klass.rules.length > 0
             @processRules(klass.rules, klass)
 
+        # Register as main definition if required
+        if klass.isMainDefinition then @mainClass =
+            title: klass.title
+            type: klass.type
+            $ref: klass.__path
+
         # Strip verbose fields
-        klass = _.omit(klass, ['rules', 'rule'])
+        klass = _.omit(klass, ['rules', 'rule', 'isMainDefinition'])
 
         # Add class to context
         utils.addAsObjectMember(ctx, 'definitions', klass.title, klass)

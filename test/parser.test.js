@@ -23,6 +23,18 @@ describe('parser', function () {
         }).to.not.throw();
     });
 
+    describe('meta', function () {
+        it('should support meta definitions', function () {
+            expect(parser.parse('@description Tweet document definition')).to.be.deep.equal([
+                {
+                    rule: "meta",
+                    key: "description",
+                    value: "Tweet document definition"
+                }
+            ]);
+        });
+    });
+
     describe('relations', function () {
         it('should support unnamed relations for embedded objects', function () {
             expect(parser.parse('-->metadata')).to.be.deep.equal([
@@ -270,7 +282,7 @@ describe('parser', function () {
             }).to.throw();
         });
 
-        it.only('should support arrays of immediately defined classes', function () {
+        it('should support arrays of immediately defined classes', function () {
             expect(parser.parse('--> issues:Issue(id)[]')).to.be.deep.equal([
                 {
                     rule: "link",
@@ -304,6 +316,17 @@ describe('parser', function () {
                 {
                     type: "object",
                     rule: "definition",
+                    title: "Tweet"
+                }
+            ]);
+        });
+
+        it('should support main class declaration', function () {
+            expect(parser.parse('@main def Tweet')).to.be.deep.equal([
+                {
+                    type: "object",
+                    rule: "definition",
+                    isMainDefinition: true,
                     title: "Tweet"
                 }
             ]);

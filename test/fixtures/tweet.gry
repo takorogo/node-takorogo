@@ -1,5 +1,8 @@
-# The whole tweet document returned by Twitter Stream API
-def Tweet {
+# Metadata
+@description Tweet document returned by Twitter Stream API
+
+# Main definition for schema
+@main def Tweet {
     UNIQUE(id_str:String)
     UNIQUE(id:Int)
 
