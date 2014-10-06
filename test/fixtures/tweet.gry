@@ -8,8 +8,8 @@ def Tweet {
     <--[POSTED]-- user:User
     --> metadata
     <--[ REPLIED_WITH|REPLIED_TO ]--> in_reply_to_status_id_str => in_reply_to:Tweet
-     --[ REFERS_TO(indices[first, last]) ]--> entities.urls[]:Url
-     --[ HAS_TAG(indices[first, last]) ]--> entities.hashtags[]:HashTag(text)
+     --[ REFERS_TO(indices[first, last]) ]--> entities.urls:Url[]
+     --[ HAS_TAG(indices[first, last]) ]--> entities.hashtags:HashTag(text)[]
      --[ AT ]--> coordinates:Location
      --[ ON ]--> geo:Location
      --[ PLACED ]--> place:Place
@@ -25,5 +25,5 @@ def Place {
 }
 
 def User(id_str) {
-    --[REFERS_TO(indices[first, last])]--> entities.url.urls[]:Url
+    --[REFERS_TO(indices[first, last])]--> entities.url.urls:Url[]
 }

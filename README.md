@@ -157,6 +157,12 @@ In case when you have a collection of instances you can use an array syntax:
 --> comments:Comment[]
 ```
 
+Unstructured arrays are also supported:
+
+```grypher
+--> things[]
+```
+
 #### Class Definition
 
 To define class use `def` keyword:
@@ -230,7 +236,7 @@ Simple classes can be defined inside relation rules by appending class name with
 You can specify indices as in normal declaration: 
 
 ```grypher
---[REFERS_TO]--> urls[]:Url(url)
+--[REFERS_TO]--> urls:Url(url)[]
 ```
 
 That will create a class `Url` with `url` as primary key and use it as a map for related nodes.

@@ -234,6 +234,68 @@ describe('parser', function () {
                 }
             ]);
         });
+
+        it('should support arrays of arrays for type', function () {
+            expect(parser.parse('--> commentSets:Comment[][][]')).to.be.deep.equal([
+                {
+                    rule: "link",
+                    attribute: {
+                        name: "commentSets",
+                        type: {
+                            type: "object",
+                            title: "Comment",
+                            isArrayOf: true,
+                            arrayDepth: 3
+                        }
+                    }
+                }
+            ]);
+        });
+
+        it('should support untyped arrays', function () {
+            expect(parser.parse('--> issues[]')).to.be.deep.equal([
+                {
+                    rule: "link",
+                    attribute: {
+                        name: "issues",
+                        type: "array"
+                    }
+                }
+            ]);
+        });
+
+        it('should not allow array ambiguities', function () {
+            expect(function() {
+                parser.parse('--> issues[]:Issue');
+            }).to.throw();
+        });
+
+        it.only('should support arrays of immediately defined classes', function () {
+            expect(parser.parse('--> issues:Issue(id)[]')).to.be.deep.equal([
+                {
+                    rule: "link",
+                    attribute: {
+                        name: "issues",
+                        type: {
+                            type: "object",
+                            title: "Issue",
+                            arrayDepth: 1,
+                            isArrayOf: true,
+                            rules: [
+                                {
+                                    rule: "index",
+                                    key: [
+                                        { name: "id" }
+                                    ],
+                                    type: "unique"
+                                }
+                            ],
+                            rule: "definition"
+                        }
+                    }
+                }
+            ]);
+        });
     });
 
     describe('classes', function () {
