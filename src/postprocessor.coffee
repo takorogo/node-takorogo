@@ -56,6 +56,7 @@ class Postprocessor
         @cleanRefs()
         schema = @processRules(data, __path: '#')
         @resolveTypeReferences(schema)
+        #todo Remove paths from schema
         schema
 
     #
@@ -184,6 +185,8 @@ class Postprocessor
     # @param [Object] ctx context for property
     # @return [Object] property context JSON Schema definition
     #
+    # @todo Deal with property paths like `items.urls`
+    #
     processAttribute: (property, ctx={}) ->
         # Process alias if required
         if property.attribute.aliasOf?
@@ -303,12 +306,42 @@ class Postprocessor
         # Process property type inline declaration
         if property.type?.rule?
             @processRule property.type, ctx
-            property.type = _.pick(property.type, ['type', 'title'])
+            property.type = _.pick(property.type, ['type', 'title', 'isArrayOf', 'arrayDepth'])
 
-        #todo Process array properties here
+        # Process array properties
+        if property.type?.isArrayOf
+            @processArrayType(property, ctx)
 
         # Register reference for type
-        if property.type? then @registerTypeReference(property, ctx)
+        if property.type?.type == 'object' then @registerTypeReference(property, ctx)
+
+        # Return context
+        ctx
+
+    #
+    # Converts array types to proper JSON schema.
+    #
+    # @param [Object] property type definition
+    # @param [Object] ctx context for property
+    # @return [Object] property context JSON Schema definition
+    #
+    processArrayType: (property, ctx) ->
+        # We assuming that array is one level by default
+        arrayDepth = property.type.arrayDepth || 1
+
+        # Creating first level wrapper
+        property.items = type: _.omit(property.type, ['isArrayOf', 'arrayDepth'])
+        # Property now of type array
+        property.type = 'array'
+
+        # Save reference to type
+        @registerTypeReference(property.items, ctx)
+
+        # Further wrapping for multidimensional arrays
+        while arrayDepth-- > 1
+            property.items =
+                type: 'array'
+                items: property.items
 
         # Return context
         ctx
