@@ -56,7 +56,24 @@ class Postprocessor
         @cleanRefs()
         schema = @processRules(data, __path: '#')
         @resolveTypeReferences(schema)
-        #todo Remove paths from schema
+        @cleanUpSchema(schema)
+        schema
+
+    #
+    # Removes technical information from schema
+    #
+    # @param [Object] schema
+    # @return [Object] schema
+    #
+    cleanUpSchema: (schema) ->
+        # Remove context path from schema
+        delete schema.__path
+
+        # Remove context paths from type definitions
+        for key, def of @typeDefs
+            delete def.__path
+
+        # Return schema
         schema
 
     #
