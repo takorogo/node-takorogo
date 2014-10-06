@@ -185,8 +185,6 @@ class Postprocessor
     # @param [Object] ctx context for property
     # @return [Object] property context JSON Schema definition
     #
-    # @todo Deal with property paths like `items.urls`
-    #
     processAttribute: (property, ctx={}) ->
         # Process alias if required
         if property.attribute.aliasOf?
@@ -199,11 +197,55 @@ class Postprocessor
         # Process property type
         @processPropertyType(property, ctx)
 
-        # Add property to context and return context
+        # Add property to context
+        @addPropertyToContext(name, property, ctx)
+
+        # Return context
+        ctx
+
+    #
+    # Adds property to specified context
+    #
+    #
+    # @param [String] name property name
+    # @param [Object] property definition of property
+    # @param [Object] ctx context for property
+    # @return [Object] property context JSON Schema definition
+    #
+    addPropertyToContext: (name, property, ctx) ->
+        # Expand property if required
+        property = @expandPropertyPath(name, property)
+
+        # Leave only first node of the name
+        name = name.split('.')[0]
+
+        # Add property to context
         utils.addAsObjectMember(ctx, 'properties', name, property)
 
         # Return context
         ctx
+
+    #
+    # Expands properties specified with paths to JSON Schema embedded objects
+    #
+    # @param [String] name property name
+    # @param [Object] property definition of property
+    # @return [Object] property context JSON Schema definition
+    #
+    expandPropertyPath: (name, property) ->
+        # Iterate over property path and expend it if required
+        path = name.split('.')
+        if path.length > 1
+            # Create wrapper for property
+            wrapper =
+                type: 'object'
+                properties: {}
+            wrapper.properties[path[1]] = @expandPropertyPath(path.slice(1).join('.'), property)
+            # Use wrapper as a new property
+            property = wrapper
+
+        # Return possibly modified property
+        property
 
     #
     # Registers type reference
