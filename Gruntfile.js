@@ -125,7 +125,8 @@ module.exports = function (grunt) {
     grunt.registerTask('e2e', ['execute:e2e']);
     grunt.registerTask('test', ['mochacov:test', 'e2e']);
     grunt.registerTask('test-ci', [mochaCoverageTask, 'e2e']);
-    grunt.registerTask('ci', ['compile', 'test-ci']);
+    grunt.registerTask('ci', ['compile', 'test-ci', 'clean:sourceMaps']);
     grunt.registerTask('default', ['compile', 'test', 'document', 'watch']);
     grunt.registerTask('publish', ['ci', 'release']);
+    grunt.registerTask('prerelease', ['ci', 'release:prerelease']);
 };
