@@ -15,6 +15,18 @@ module.exports.pushAsArrayItem = (ctx, container, item) ->
     ctx[container].push(item)
 
 #
+# Pushes item to `container` array of object `ctx` creating it if necessary.
+# Equals to @see pushAsArrayItem but do not adds duplicate entries.
+#
+# @param [Object] ctx
+# @param [String] container
+# @param [*] item
+#
+module.exports.pushAsArrayUniqueItem = (ctx, container, item) ->
+    ctx[container] = ctx[container] || []
+    if item not in ctx[container] then ctx[container].push(item)
+
+#
 # Assigns value to `container` hash inside `ctx` object creating it if necessary.
 #
 # @param [Object] ctx

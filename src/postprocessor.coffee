@@ -208,6 +208,14 @@ class Postprocessor
         # Add index to context
         utils.pushAsArrayItem(ctx, 'indexes', index)
 
+        # Ensure that index keys are mentioned in schema
+        index.key.forEach (key) =>
+            # Add keys as properties if not already added
+            if not ctx.properties?[key]?
+                @addPropertyToContext(key, {}, ctx)
+            # Mark key properties as required
+            utils.pushAsArrayUniqueItem(ctx, 'required', key)
+
         # Return context
         ctx
 
