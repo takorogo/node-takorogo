@@ -103,6 +103,10 @@ class Postprocessor
             additionalProperties: false
             required: elements
 
+        # Add dummy properties declarations
+        klass.required.forEach (key) =>
+            @addPropertyToContext(key, {}, klass)
+
         # New enumeration definition
         enumeration =
             __path: @constructor.absoluteReferencePathForClass(enumeration.title, ctx)
@@ -111,11 +115,11 @@ class Postprocessor
             elements: elements
             minItems: elements.length
             maxItems: elements.length
-
+        # Save link to target class definition
         enumeration.destructuredTo =
             $ref: @constructor.absoluteReferencePathForClass(destructuredClassTitle, enumeration)
 
-        # Add class to definition to local definitions
+        # Add class definition to local definitions
         @processDefinition(klass, enumeration)
 
         # Add enumeration to context

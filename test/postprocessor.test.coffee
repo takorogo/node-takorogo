@@ -56,6 +56,66 @@ describe 'postprocessor', ->
 
 
     describe 'enumerations', ->
+        simpleEnumerationSchema = null
+        simpleEnumerationDefinition = null
+
+        beforeEach ->
+            simpleEnumerationSchema = postprocessor.postprocess([
+                type: 'object'
+                rule: 'enumeration'
+                title: 'Coordinates'
+                elements: [
+                    { name: 'longitude' }
+                    { name: 'latitude' }
+                ]
+            ])
+            simpleEnumerationDefinition = simpleEnumerationSchema.definitions.Coordinates
+
+        it 'should describe enumerations as extended definition', ->
+            expect(simpleEnumerationSchema.definitions).to.have.property('Coordinates')
+
+        it 'should describe enumeration as arrays with strict item count', ->
+            expect(simpleEnumerationDefinition).to.have.property('type', 'array')
+            expect(simpleEnumerationDefinition).to.have.property('maxItems', 2)
+            expect(simpleEnumerationDefinition).to.have.property('minItems', 2)
+
+        it 'should list array item names', ->
+            expect(simpleEnumerationDefinition).to.have.property('elements').deep.equal([
+                'longitude'
+                'latitude'
+            ])
+
+        it 'should refer to destructured object definition', ->
+            expect(simpleEnumerationDefinition).to.have.property('destructuredTo')
+            expect(simpleEnumerationDefinition.destructuredTo)
+                .to.have.property('$ref', '#/definitions/Coordinates/definitions/__Coordinates__')
+
+        it 'should generate definition for object to which array should be converted', ->
+            expect(simpleEnumerationDefinition.definitions).to.have.property('__Coordinates__')
+            
+        
+        describe 'destructured object definition', ->
+            simpleDestructuredObjectDefinition = null
+
+            beforeEach ->
+                simpleDestructuredObjectDefinition =
+                    simpleEnumerationDefinition.definitions.__Coordinates__
+            
+            it 'should be a definition', ->
+                expect(simpleDestructuredObjectDefinition).to.have.property('title', '__Coordinates__')
+                expect(simpleDestructuredObjectDefinition).to.have.property('type', 'object')
+
+            it 'should describe destructured properties', ->
+                expect(simpleDestructuredObjectDefinition).to.have.property('properties')
+                expect(simpleDestructuredObjectDefinition.properties).to.have.property('longitude')
+                expect(simpleDestructuredObjectDefinition.properties).to.have.property('latitude')
+
+            it 'should restrict properties exactly to what was destructured from array', ->
+                expect(simpleDestructuredObjectDefinition).to.have.property('additionalProperties', false)
+                expect(simpleDestructuredObjectDefinition).to.have.property('required').deep.equal([
+                    'longitude'
+                    'latitude'
+                ])
 
 
     describe 'indexes', ->
