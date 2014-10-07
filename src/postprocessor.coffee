@@ -28,26 +28,12 @@ class Postprocessor
         "#{ctx.__path}/definitions/#{className}"
 
     #
-    # @param [Object] parser
-    #
-    constructor: (@parser) ->
-
-    #
     # Cleans up references
     #
     cleanRefs: () ->
         @typeRefs = []
         @typeDefs = {}
         @mainClass = false
-
-    #
-    # Executes jison parser and converts it's result to JSON Schema
-    #
-    # @param [String] data
-    # @return [Object] JSON Schema
-    #
-    parse: (data) ->
-        @postprocess(@parser.parse(data))
 
     #
     # Processes whole raw output from jison parser to JSON Schema

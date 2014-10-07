@@ -19,17 +19,11 @@ describe 'postprocessor', () ->
     it 'should export Postprocessor class', () ->
         expect(Postprocessor).to.be.a('function')
 
-    it 'should wrap parser', () ->
-        spy = sinon.spy(parser, 'parse')
-        postprocessor = new Postprocessor(parser)
-
-        expect(postprocessor).to.respondTo('parse')
-        postprocessor.parse(tweetRules)
-
-        expect(spy).have.been.called.once
-        expect(spy).have.been.calledWith(tweetRules)
-
-        spy.restore()
+    it 'should consume grypher parser results', () ->
+        postprocessor = new Postprocessor
+        expect(->
+            postprocessor.postprocess(parser.parse(tweetRules))
+        ).to.not.throw()
 
 
     describe 'classes', () ->

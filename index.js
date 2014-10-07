@@ -1,6 +1,6 @@
 var
     parser = require('./lib/parser'),
-    Postprocessor = require('./lib/postprocessor');
+    Grypher = require('./lib/grypher');
 
 
-module.exports = new Postprocessor(parser);
+module.exports = new Grypher(parser);
