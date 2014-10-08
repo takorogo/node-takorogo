@@ -5,8 +5,9 @@
 .gitignore
 .jshintrc
 .travis.yml
-.coffeelint.json
+coffeelint.json
 Gruntfile.js
+.npmignore
 
 #todo Ignore globally
 /.idea/
