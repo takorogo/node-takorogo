@@ -304,4 +304,20 @@ describe 'postprocessor', ->
     describe 'types', ->
 
 
-    describe 'schema', ->
+    describe 'meta definitions', ->
+
+        it 'should support reserved global keywords', ->
+            ['title', 'description'].forEach (key) ->
+                expect(postprocessor.postprocess([
+                    rule: 'meta'
+                    key: key
+                    value: 'Spam'
+                ])).to.have.property(key, 'Spam')
+
+        it 'should pit not-reserved meta definitions in dedicated hash', ->
+            ['eggs', 'worship'].forEach (key) ->
+                expect(postprocessor.postprocess([
+                    rule: 'meta'
+                    key: key
+                    value: 'Spam'
+                ]).metadata).to.have.property(key, 'Spam')
