@@ -211,6 +211,94 @@ describe 'postprocessor', ->
 
 
     describe 'properties', ->
+        propertyDefinition = null
+
+        beforeEach ->
+            propertyDefinition = postprocessor.postprocess([
+                rule: "attribute"
+                attribute:
+                    name: 'place.country'
+                    type:
+                        type: 'object'
+                        title: 'Country'
+                    aliasOf:
+                        name: 'profile.place.country'
+            ])
+
+        it 'should transform properties with paths into objects', ->
+            expect(propertyDefinition.properties).to.have.property('place')
+            expect(propertyDefinition.properties.place.properties)
+                .to.have.property('country').deep.equals(type: 'Country')
+
+        it 'should process aliases', ->
+            expect(propertyDefinition.aliases).to.have.property('place.country', 'profile.place.country')
+
+
+        describe 'inline definitions', ->
+            inlineDefinition = null
+
+            beforeEach ->
+                inlineDefinition = postprocessor.postprocess([
+                    rule: "attribute"
+                    attribute:
+                        name: 'country'
+                        type:
+                            type: 'object'
+                            title: 'Country'
+                            rules: [
+                                rule: 'index'
+                                key: [
+                                    name: 'name'
+                                ]
+                                type: 'unique'
+                            ]
+                            rule: 'definition'
+                ])
+
+            it 'should properly resolve inline definitions', ->
+                expect(inlineDefinition.properties.country).to.have.property('$ref', '#/definitions/Country')
+
+            it 'should save inner type definitions', ->
+                expect(inlineDefinition.definitions).to.have.property('Country')
+
+
+        describe 'arrays', ->
+            arrayDefinition = null
+
+            beforeEach ->
+                arrayDefinition = postprocessor.postprocess([
+                    rule: "attribute"
+                    attribute:
+                        name: 'comment'
+                        type:
+                            type: 'object'
+                            title: 'Comment'
+                            isArrayOf: true
+                            arrayDepth: 2
+                            rules: [
+                                    rule: 'index'
+                                    key: [
+                                        name: 'id'
+                                    ]
+                                    type: 'unique'
+                            ]
+                            rule: 'definition'
+
+                ])
+
+            it 'should wrap properly describe arrays', ->
+                expect(arrayDefinition.properties.comment).to.have.property('type', 'array')
+                expect(arrayDefinition.properties.comment).to.have.property('items')
+                expect(arrayDefinition.properties.comment.items).to.have.property('type', 'array')
+                expect(arrayDefinition.properties.comment.items).to.have.property('items')
+                expect(arrayDefinition.properties.comment.items.items).to.have.property('type', 'object')
+
+            it 'should properly resolve inline definitions', ->
+                expect(arrayDefinition.properties.comment.items.items)
+                    .to.have.property('$ref', '#/definitions/Comment')
+
+            it 'should save inner type definitions', ->
+                expect(arrayDefinition.definitions).to.have.property('Comment')
 
 
     describe 'types', ->
