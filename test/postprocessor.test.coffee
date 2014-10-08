@@ -302,6 +302,48 @@ describe 'postprocessor', ->
 
 
     describe 'types', ->
+        classesDefinition = null
+
+        beforeEach ->
+            classesDefinition = postprocessor.postprocess([
+                {
+                    type: 'object'
+                    rule: 'definition'
+                    title: 'Tweet'
+                    rules: [
+                        rule: 'attribute'
+                        attribute:
+                            name: 'author'
+                            type:
+                                type: 'object'
+                                title: 'User'
+                    ]
+                },
+                {
+                    type: 'object'
+                    rule: 'definition'
+                    title: 'User'
+                    rules: [
+                        rule: 'attribute'
+                        attribute:
+                            name: 'age'
+                            type:
+                                type: 'object'
+                                title: 'Integer'
+                    ]
+                }
+            ])
+
+        it 'should resolve defined types', ->
+            expect(classesDefinition.definitions).has.property('Tweet')
+            expect(classesDefinition.definitions).has.property('User')
+            expect(classesDefinition.definitions.Tweet.properties.author).has.property('$ref', '#/definitions/User')
+
+        it 'should specify unresolvable types directly', ->
+            expect(classesDefinition.definitions.User.properties.age).has.property('type', 'Integer')
+
+        it 'should collect unresolvable types in special hash', ->
+            expect(classesDefinition.unresolvedTypes).to.contain('Integer')
 
 
     describe 'meta definitions', ->
