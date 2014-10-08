@@ -148,9 +148,55 @@ describe 'postprocessor', ->
 
 
     describe 'relations', ->
+        simpleRelationDefinition = null
+
+        beforeEach ->
+            simpleRelationDefinition = postprocessor.postprocess([
+                rule: 'relation'
+                out:
+                    name: 'CREATED_BY'
+                    attributes: [
+                        name: 'when'
+                        type: 'object'
+                        title: 'DateTime'
+                    ]
+                attribute:
+                    name: 'author'
+                    type:
+                        type: 'object'
+                        title: 'User'
+            ])
+
+        it 'should save relations to dedicated hash', ->
+            expect(simpleRelationDefinition.relations).to.have.property('author')
+
+        it 'should save relation direction', ->
+            expect(simpleRelationDefinition.relations.author.out).to.have.property('name', 'CREATED_BY')
+
+        it 'should save relation attributes', ->
+            expect(simpleRelationDefinition.relations.author.out).to.have.property('attributes')
+            expect(simpleRelationDefinition.relations.author.out.attributes).to.contain('when')
+
+        it 'should treat relations as implicit properties declarations', ->
+            expect(simpleRelationDefinition.properties).to.have.property('author')
+            expect(simpleRelationDefinition.properties.author).to.have.property('type', 'User')
+
+        it 'should specify what property is managed by relation', ->
+            expect(simpleRelationDefinition.relations.author).to.have.property('property', 'author')
+
+        it 'should treat relation attributes as implicit properties declarations', ->
+            expect(simpleRelationDefinition.properties).to.have.property('when').deep.equals
+                type: 'object'
+                title: 'DateTime'
+
+
+    describe 'links', ->
 
 
     describe 'properties', ->
 
 
-    describe 'links', ->
+    describe 'types', ->
+
+
+    describe 'schema', ->

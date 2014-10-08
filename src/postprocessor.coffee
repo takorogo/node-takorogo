@@ -449,6 +449,15 @@ class Postprocessor
             #todo We need to get rid of ambiguity of `attribute` and `property` which are the same at this project.
             property: relation.attribute.name
 
+        # Process both in and out relations with attributes
+        for relType in ['in', 'out'] when relation[relType]?.attributes?
+            relation[relType].attributes = relation[relType].attributes.map (attr) =>
+                # Add relation attributes as properties if required
+                if not ctx.properties?[attr.name]
+                    @processAttribute(attribute: attr, ctx)
+                # Reduce attribute to property name only
+                attr.name
+
         # Add relation to context and return context
         utils.addAsObjectMember(ctx, 'relations', relation.property, relation)
 

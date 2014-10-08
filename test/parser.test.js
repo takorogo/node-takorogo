@@ -117,6 +117,34 @@ describe('parser', function () {
                 }
             ]);
         });
+
+        it('should support types in relation attributes', function () {
+            expect(parser.parse('--[PARTICIPATE_IN(score:Score, wins)]--> game:Game')).to.be.deep.equal([
+                {
+                    rule: "relation",
+                    out: {
+                        name: "PARTICIPATE_IN",
+                        attributes: [
+                            {
+                                name: "score",
+                                type: {
+                                    type: "object",
+                                    title: "Score"
+                                }
+                            },
+                            { name: "wins" }
+                        ]
+                    },
+                    attribute: {
+                        name: "game",
+                        type: {
+                            type: "object",
+                            title: "Game"
+                        }
+                    }
+                }
+            ]);
+        });
     });
 
     describe('attributes', function () {
