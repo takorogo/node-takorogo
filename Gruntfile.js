@@ -1,5 +1,7 @@
 // Generated on 2014-07-07 using generator-nodejs 2.0.0
 module.exports = function (grunt) {
+    require('load-grunt-tasks')(grunt);
+
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         jshint: {
@@ -81,6 +83,7 @@ module.exports = function (grunt) {
         clean: {
             lib: ['lib/'],
             doc: ['doc/'],
+            client: ['client/'],
             test: ['test/**/*.cpl.js', 'test/tmp/'],
             sourceMaps: ['**/*.js.map', '!node_modules/**/*.js']
         },
@@ -93,6 +96,23 @@ module.exports = function (grunt) {
                 stats: false
             },
             src: [ 'src/' ]
+        },
+        browserify: {
+            all: {
+                files: {
+                    'client/grypher.js': ['index.js', 'lib/**/*.js']
+                },
+                options: {
+                    alias: [ './index.js:grypher']
+                }
+            }
+        },
+        uglify: {
+            grypher: {
+                files: {
+                    'client/grypher.min.js': ['client/grypher.js']
+                }
+            }
         },
         watch: {
             all: {
@@ -108,19 +128,7 @@ module.exports = function (grunt) {
     // Send coverage report to Coveralls.io only for Travis CI builds.
     var mochaCoverageTask = 'mochacov:' + (process.env.TRAVIS ? 'travis' : 'local');
 
-    grunt.loadNpmTasks('grunt-jison');
-    grunt.loadNpmTasks('grunt-contrib-jshint');
-    grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-mocha-cov');
-    grunt.loadNpmTasks('grunt-release');
-    grunt.loadNpmTasks('grunt-execute');
-    grunt.loadNpmTasks('grunt-contrib-copy');
-    grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-contrib-coffee');
-    grunt.loadNpmTasks('grunt-codo');
-    grunt.loadNpmTasks('grunt-coffeelint');
-
-    grunt.registerTask('compile', ['clean', 'jshint', 'jison', 'coffeelint', 'coffee', 'copy:sources']);
+    grunt.registerTask('compile', ['clean', 'jshint', 'jison', 'coffeelint', 'coffee', 'copy:sources', 'browserify', 'uglify']);
     grunt.registerTask('document', ['clean:doc', 'codo']);
     grunt.registerTask('e2e', ['execute:e2e']);
     grunt.registerTask('test', ['mochacov:test', 'e2e']);

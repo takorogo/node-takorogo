@@ -22,8 +22,8 @@ coverage
 .grunt
 
 # Compiled binary addons (http://nodejs.org/api/addons.html)
-build/Release
 /lib/
+/client/
 *.js.map
 
 # Dependency directory
