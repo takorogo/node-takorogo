@@ -36,7 +36,7 @@ describe('parser', function () {
     });
 
     describe('relations', function () {
-        it('should support unnamed relations for embedded objects', function () {
+        it('should support links', function () {
             expect(parser.parse('-->metadata')).to.be.deep.equal([
                 {
                     rule: "link",

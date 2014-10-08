@@ -73,6 +73,12 @@ You can specify what attribute will be stored in relation passing them to relati
 ```grypher
 --[PARTICIPATE_IN(score, wins)]--> game:Game
 ```
+
+You can specify types for relation attributes:
+
+```grypher
+--[PARTICIPATE_IN(score: Score, wins: Integer)]--> game:Game
+```
  
 Or even destructuring an array property:
  
@@ -113,7 +119,7 @@ Attention: attribute aliasing in types constraints are not supported yet.
 Embedded objects are stored inside the node. Mechanism depends on graph database engine.  
 
 
-### Unnamed relations (link)
+### Links (anonymous relations)
 
 You can store unstructured embedded object as a link to node: 
 

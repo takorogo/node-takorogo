@@ -191,6 +191,23 @@ describe 'postprocessor', ->
 
 
     describe 'links', ->
+        linkDefintion = null
+
+        beforeEach ->
+            linkDefintion = postprocessor.postprocess([
+                rule: 'link'
+                attribute:
+                    name: 'metadata'
+            ])
+
+        it 'should store links into dedicated hash', ->
+            expect(linkDefintion.links).to.have.property('metadata')
+
+        it 'should point links to managed property', ->
+            expect(linkDefintion.links.metadata).to.have.property('property', 'metadata')
+
+        it 'should treat links as implicit properties declarations', ->
+            expect(linkDefintion.properties).to.have.property('metadata')
 
 
     describe 'properties', ->
