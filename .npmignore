@@ -1,0 +1,14 @@
+/coverage/
+/data/
+/src/
+/test/
+.gitignore
+.jshintrc
+.travis.yml
+.coffeelint.json
+Gruntfile.js
+
+#todo Ignore globally
+/.idea/
+atlassian-ide-plugin.xml
+
