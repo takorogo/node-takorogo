@@ -81,6 +81,7 @@ module.exports = function (grunt) {
             }
         },
         clean: {
+            grunt: ['.grunt/'],
             lib: ['lib/'],
             doc: ['doc/'],
             client: ['client/'],
