@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset='UTF-8'>
+  <title>Node.js parser from Grypher to JSON Schema</title>
+  <script src='../javascript/application.js'></script>
+  <script src='../javascript/search.js'></script>
+  <link rel='stylesheet' href='../stylesheets/application.css' type='text/css'>
+</head>
+  <body>
+    <div id='base' data-path='../'></div>
+<div id='header'>
+  <div id='menu'>
+    <a href='../extra/README.md.html' title='Node Grypher'>
+      Node Grypher
+    </a>
+    &raquo;
+    <a href='../alphabetical_index.html' title='Index'>
+      Index
+    </a>
+    &raquo;
+    <span class='title'>README.md</span>
+  </div>
+</div>
+    <div id='content'>
+      <nav class='toc'>
+        <p class='title'>
+          <a class='hide_toc' href='#'>
+            <strong>Table of Contents</strong>
+          </a>
+          <small>
+            (<a class='float_toc' href='#'>left</a>)
+          </small>
+        </p>
+      </nav>
+      <div id='filecontents'>
+        <h1 id="node-grypher">node-grypher</h1><p>Grypher to JSON parser for Node.js</p><p><a href="http://travis-ci.org/Sitin/node-grypher"><img src="https://travis-ci.org/Sitin/node-grypher.svg" alt="build status"></a>
+<a href="https://coveralls.io/r/Sitin/node-grypher"><img src="https://img.shields.io/coveralls/Sitin/node-grypher.svg" alt="Coverage Status"></a>
+<a href="http://badge.fury.io/js/grypher"><img src="https://badge.fury.io/js/grypher.svg" alt="NPM version"></a>
+<a href="https://david-dm.org/Sitin/node-grypher"><img src="https://david-dm.org/Sitin/node-grypher.svg" alt="Dependency Status"></a>
+<a href="https://david-dm.org/Sitin/node-grypher#info=devDependencies"><img src="https://david-dm.org/Sitin/node-grypher/dev-status.svg" alt="devDependency Status"></a></p><h2 id="installation">Installation</h2><p>This module is installed via npm:</p><pre><code class="lang-bash">$ npm install grypher
+</code></pre>
+<h2 id="example-usage">Example Usage</h2>
+<pre><code class="lang-js">var grypher = require(&#39;grypher&#39;);
+var rules = grypher.parse(&#39;user &lt;--[POSTED]-- :User&#39;);
+</code></pre>
+<h2 id="grypher-syntax">Grypher Syntax</h2><p>Grypher uses relations to maps properties to nodes determined by classes and their indices. That&#39;s all.</p><h3 id="relations">Relations</h3><p>For example we have a tweet with embedded user object:</p><pre><code class="lang-javascript">var tweet = {
+    id: 481101713646960641
+    user: {
+        default_profile_image : false,
+        id : 119102990,
+        profile_background_image_url_https : &quot;https://pbs.twimg.com/profile_background_images/444244318/16840333315.png&quot;,
+        verified : false,
+        /* ... */
+    }
+}
+</code></pre><p>In this case we can say that tweet posted by user:</p><pre><code class="lang-grypher">--[POSTED_BY]--&gt; user:User
+</code></pre><p>Or that user posted a tweet:</p><pre><code class="lang-grypher">&lt;--[POSTED]-- user:User
+</code></pre><p>Or user and tweet has a bidirectional relationship:</p><pre><code class="lang-grypher">&lt;--[POSTED|POSTED_BY]--&gt; user:User
+</code></pre><p>Where <code>user</code> is a property name that contains embedded object and <code>:User</code> is a name of a class.</p><p>You can specify what attribute will be stored in relation passing them to relation in parentheses:</p><pre><code class="lang-grypher">--[PARTICIPATE_IN(score, wins)]--&gt; game:Game
+</code></pre><p>You can specify types for relation attributes:</p><pre><code class="lang-grypher">--[PARTICIPATE_IN(score: Score, wins: Integer)]--&gt; game:Game
+</code></pre><p>Or even destructuring an array property:</p><pre><code class="lang-grypher">entities.urls[] --[REFERS_TO(indices[first, last])]--&gt; :Url
+</code></pre><p>Attention. Currently only plain values are supported. </p><h3 id="attributes">Attributes</h3><p>Sometimes your document&#39;s structure doesn&#39;t fit plane key-value nature of node.
+In this case you can specify properties by paths:</p><pre><code class="lang-grypher">--[CITIZEN_OF]--&gt; place.country:Country
+</code></pre><p>If document&#39;s field doesn&#39;t match what you want to have in the target node you can rename it:</p><pre><code class="lang-grypher">--[CITIZEN_OF]--&gt; place.country =&gt; country:Country
+</code></pre><p>You also can assign types to attributes (user-defined classes are also supported):</p><pre><code class="lang-grypher">def :Person {
+    + firstName :String
+    + dateOfBirth :Date
+}
+</code></pre><p>Attention: attribute aliasing in types constraints are not supported yet.</p><h3 id="embedded-objects">Embedded objects</h3><p>Embedded objects are stored inside the node. Mechanism depends on graph database engine.  </p><h3 id="links-anonymous-relations-">Links (anonymous relations)</h3><p>You can store unstructured embedded object as a link to node: </p><pre><code class="lang-grypher">--&gt; metadata
+</code></pre><p>As for normal relations you can specify classes and arrays for links:</p><pre><code class="lang-gypher">--&gt; tweet:Tweet
+--&gt; comments:Comment[]
+</code></pre>
+<h3 id="indices">Indices</h3><p>You can specify unique constraint: </p><pre><code class="lang-grypher">UNIQUE(id)
+</code></pre><p>Grypher also handles compound constraints:</p><pre><code class="lang-grypher">UNIQUE(firstName, lastName)
+</code></pre>
+<h3 id="classes-types">Classes &amp; Types</h3><p>You can refer to already defined class or type by colon notation:</p><pre><code class="lang-grypher">UNIQUE(id:Int)
+--&gt; tweet:Tweet
+</code></pre><p>In case when you have a collection of instances you can use an array syntax:</p><pre><code class="lang-grypher">--&gt; comments:Comment[]
+</code></pre><p>Unstructured arrays are also supported:</p><pre><code class="lang-grypher">--&gt; things[]
+</code></pre>
+<h4 id="class-definition">Class Definition</h4><p>To define class use <code>def</code> keyword:</p><pre><code class="lang-grypher">def Tweet
+</code></pre><p>You can specify primary key in parentheses:</p><pre><code class="lang-grypher">def HashTag(text)
+</code></pre><p>Compound indexes are also supported:</p><pre><code class="lang-grypher">def Person(firstname, lastname)
+</code></pre><p>And you can use paths to specify properties:</p><pre><code class="lang-grypher">def Citizen(credentials.passport.number)
+</code></pre><p>Sometimes your class&#39;s primary key is stored in array.
+For example we have a location document with unique combinations of longitude and latitude stored in array.
+For this cases you can write: </p><pre><code class="lang-grypher">def Location(coordinates[longitude, latitude])
+</code></pre>
+<h4 id="complex-classes">Complex Classes</h4><p>You can define rules for complex classes in curly braces:</p><pre><code class="lang-grypher">def User(passport.id) {
+    --[CHILD_OF]--&gt; father:Person
+    --[REFERS_TO(indices[first, last])]--&gt; entities.url.urls[]:Url
+}
+</code></pre>
+<h4 id="enumerations">Enumerations</h4><p>You can define enumeration mappers for arrays of fixed length:</p><pre><code class="lang-grypher">def Coordinates [ longitude, latitude ]
+</code></pre><p>After array items specified we can treat it as a regular document:</p><pre><code class="lang-grypher">def VendorCoordinates [ longitude, latitude, vendor ] {
+  UNIQUE(longitude, latitude, vendor.id)
+  --[PRODUCED_BY]--&gt; vendor:Vendor  
+}
+</code></pre>
+<h3 id="inline-class-definition">Inline Class Definition</h3><p>Simple classes can be defined inside relation rules by appending class name with parentheses:</p><pre><code class="lang-grypher">--[POPULATED_WITH]--&gt; comment:Comment(id)
+</code></pre><p>You can specify indices as in normal declaration: </p><pre><code class="lang-grypher">--[REFERS_TO]--&gt; urls:Url(url)[]
+</code></pre><p>That will create a class <code>Url</code> with <code>url</code> as primary key and use it as a map for related nodes.</p><h3 id="comments">Comments</h3><p>Grypher supports only one line comments (both <code>#</code> and <code>//</code>):</p><pre><code class="lang-grypher"># JIRA task 
+def Task {
+  UNIQUE(id)  // Primary key
+  --[BLOCKED_BY]--&gt;blocker:Task
+}
+</code></pre>
+<h2 id="examples">Examples</h2><p>The following Grypher script describes tweet structure from Twitter Stream API:  </p><pre><code class="lang-grypher"># The whole tweet document returned by Twitter Stream API
+def Tweet {
+    UNIQUE(id_str:String)
+    UNIQUE(id:Int)
+
+    + location: String
+
+    &lt;--[POSTED]-- user:User
+    --&gt; metadata
+    &lt;--[ REPLIED_WITH|REPLIED_TO ]--&gt; in_reply_to_status_id_str =&gt; in_reply_to:Tweet
+     --[ REFERS_TO(indices[first, last]) ]--&gt; entities.urls[]:Url
+     --[ HAS_TAG(indices[first, last]) ]--&gt; entities.hashtags[]:HashTag(text)
+     --[ AT ]--&gt; coordinates:Location
+     --[ ON ]--&gt; geo:Location
+     --[ PLACED ]--&gt; place:Place
+}
+
+# Just a point
+def Coordinates [ longitude, latitude ] {
+  UNIQUE(longitude: Double, latitude: Double)
+}
+
+def Location(coordinates:Coordinates)  // Simply a wrapper for coordinates 
+
+def Place {
+    --[ BOUNDED_BY ]--&gt; bounding_box.coordinates =&gt; bounding_box:Coordinates[]
+}
+
+def User(id_str) {
+    --[REFERS_TO(indices[first, last])]--&gt; entities.url.urls[]:Url
+}
+</code></pre>
+<h2 id="road-map">Road map</h2>
+<h3 id="support-indentation-for-class-rules">Support indentation for class rules</h3>
+<pre><code class="lang-grypher">def :Person
+    UNIQUE(passport.id)
+    --[CHILD_OF]--&gt; father:Person
+</code></pre>
+<h3 id="add-attribute-rewrite-in-type-constraint-statements">Add attribute rewrite in type constraint statements</h3>
+<pre><code class="lang-grypher">def :Person {
+    + name.first =&gt; firstName :String
+}
+</code></pre>
+
+      </div>
+    </div>
+    <div id='footer'>
+  October 09, 14 13:47:18 by
+  <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
+    Codo
+  </a>
+  2.0.9
+  &#10034;
+  Press H to see the keyboard shortcuts
+  &#10034;
+  <a href='http://twitter.com/netzpirat' target='_parent'>@netzpirat</a>
+  &#10034;
+  <a href='http://twitter.com/_inossidabile' target='_parent'>@_inossidabile</a>
+</div>
+<iframe id='search_frame'></iframe>
+<div id='fuzzySearch'>
+  <input type='text'>
+  <ol></ol>
+</div>
+<div id='help'>
+  <p>
+    Quickly fuzzy find classes, mixins, methods, file:
+  </p>
+  <ul>
+    <li>
+      <span>T</span>
+      Open fuzzy finder dialog
+    </li>
+  </ul>
+  <p>
+    Control the navigation frame:
+  </p>
+  <ul>
+    <li>
+      <span>L</span>
+      Toggle list view
+    </li>
+    <li>
+      <span>C</span>
+      Show class list
+    </li>
+    <li>
+      <span>I</span>
+      Show mixin list
+    </li>
+    <li>
+      <span>F</span>
+      Show file list
+    </li>
+    <li>
+      <span>M</span>
+      Show method list
+    </li>
+    <li>
+      <span>E</span>
+      Show extras list
+    </li>
+  </ul>
+  <p>
+    You can focus and blur the search input:
+  </p>
+  <ul>
+    <li>
+      <span>S</span>
+      Focus search input
+    </li>
+    <li>
+      <span>Esc</span>
+      Blur search input
+    </li>
+  </ul>
+</div>
+  </body>
+</html>
