@@ -6,6 +6,7 @@
   "scripts": {
     "test": "node_modules/.bin/grunt ci"
   },
+  "homepage": "http://sitin.github.io/node-grypher/",
   "repository": {
     "type": "git",
     "url": "https://github.com/Sitin/node-grypher"
