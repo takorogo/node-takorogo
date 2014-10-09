@@ -122,19 +122,28 @@ module.exports = function (grunt) {
                     nospawn: true
                 }
             }
+        },
+        'gh-pages': {
+            options: {
+                base: 'doc'
+            },
+            src: ['**']
         }
     });
 
     // Send coverage report to Coveralls.io only for Travis CI builds.
     var mochaCoverageTask = 'mochacov:' + (process.env.TRAVIS ? 'travis' : 'local');
 
+    //todo Review tasks that seems to be too complicated
     grunt.registerTask('compile', ['clean', 'jshint', 'jison', 'coffeelint', 'coffee', 'copy:sources', 'browserify', 'uglify']);
     grunt.registerTask('document', ['clean:doc', 'codo']);
     grunt.registerTask('e2e', ['execute:e2e']);
     grunt.registerTask('test', ['mochacov:test', 'e2e']);
     grunt.registerTask('test-ci', [mochaCoverageTask, 'e2e']);
     grunt.registerTask('ci', ['compile', 'test-ci', 'clean:sourceMaps']);
-    grunt.registerTask('default', ['compile', 'test', 'document', 'watch']);
-    grunt.registerTask('publish', ['ci', 'release']);
-    grunt.registerTask('prerelease', ['ci', 'release:prerelease']);
+    grunt.registerTask('default', ['build', 'watch']);
+    grunt.registerTask('website', ['gh-pages']);
+    grunt.registerTask('build', ['compile', 'test', 'document']);
+    grunt.registerTask('publish', ['build', 'release', 'website']);
+    grunt.registerTask('prerelease', ['build', 'release:prerelease', 'website']);
 };
