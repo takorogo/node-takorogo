@@ -97,7 +97,10 @@ module.exports = function (grunt) {
                 stats: false,
                 analytics: 'UA-55577995-1'
             },
-            src: [ 'src/' ]
+            src: {
+                src: 'src/',
+                dest: 'doc/'
+            }
         },
         browserify: {
             all: {
