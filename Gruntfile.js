@@ -94,7 +94,8 @@ module.exports = function (grunt) {
                 title: 'Node.js parser from Grypher to JSON Schema',
                 extra: [ 'LICENSE-MIT' ],
                 undocumented: true,
-                stats: false
+                stats: false,
+                analytics: 'UA-55577995-1'
             },
             src: [ 'src/' ]
         },
