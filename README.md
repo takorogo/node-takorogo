@@ -27,7 +27,7 @@ var rules = grypher.parse('user <--[POSTED]-- :User');
 ```
 
 Grypher Syntax
-----------------
+--------------
 
 Grypher uses relations to maps properties to nodes determined by classes and their indices. That's all.
 
@@ -298,6 +298,19 @@ def User(id_str) {
     --[REFERS_TO(indices[first, last])]--> entities.url.urls[]:Url
 }
 ```
+
+Browser
+-------
+
+Client versions of `node-grypher` can be built from sources or can be found in `./client/` directory of NPM module.
+
+
+Contribution
+------------
+
+You can start from [API docs](http://sitin.github.io/node-grypher/).
+
+I will accept only changes covered by unit tests.
 
 
 Road map
