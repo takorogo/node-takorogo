@@ -1,5 +1,7 @@
 // Generated on 2014-07-07 using generator-nodejs 2.0.0
 module.exports = function (grunt) {
+    'use strict';
+
     require('load-grunt-tasks')(grunt);
 
     grunt.initConfig({
@@ -75,7 +77,12 @@ module.exports = function (grunt) {
         copy: {
             sources: {
                 files: [
-                    { expand: true, src: ['**.js'], cwd: 'src/', dest: 'lib/' }
+                    {
+                        expand: true,
+                        src: ['**.js'],
+                        cwd: 'src/',
+                        dest: 'lib/'
+                    }
                 ],
                 mode: true
             }
@@ -84,7 +91,7 @@ module.exports = function (grunt) {
             grunt: ['.grunt/'],
             lib: ['lib/'],
             doc: ['doc/'],
-            client: ['client/'],
+            client: ['client/lib/'],
             test: ['test/**/*.cpl.js', 'test/tmp/'],
             sourceMaps: ['**/*.js.map', '!node_modules/**/*.js']
         },
@@ -105,17 +112,17 @@ module.exports = function (grunt) {
         browserify: {
             all: {
                 files: {
-                    'client/grypher.js': ['index.js', 'lib/**/*.js']
+                    'client/lib/takorogo.js': ['index.js', 'lib/**/*.js']
                 },
                 options: {
-                    alias: [ './index.js:grypher']
+                    alias: [ './index.js:takorogo']
                 }
             }
         },
         uglify: {
             grypher: {
                 files: {
-                    'client/grypher.min.js': ['client/grypher.js']
+                    'client/lib/takorogo.min.js': ['client/lib/takorogo.js']
                 }
             }
         },
@@ -129,11 +136,58 @@ module.exports = function (grunt) {
             }
         },
         'gh-pages': {
-            options: {
-                base: 'doc'
+            'docs': {
+                options: {
+                    base: 'doc'
+                },
+                src: ['**']
             },
-            src: ['**']
+            client: {
+                options: {
+                    base: 'client/',
+                    repo: 'https://github.com/takorogo/takorogo.js.git',
+                    branch: 'master',
+                    tag: '<%= client.tag %>',
+                    message: 'Client release of version <%= client.tag %> (<%= client.description %>).'
+                },
+                src: ['**']
+            }
         }
+    });
+
+    grunt.registerTask('release-client', 'Release client library to "client" branch with proper tag', function () {
+        // Convert task to async mode
+        var done = this.async();
+
+        // Retrieve latest tag info from git
+        require('child_process').exec('git describe', function (error, stdout) {
+            // Throw on error
+            if (error) {
+                throw new Error(error);
+            }
+
+            // Parse git description to retrieve semver tag only
+            var description = stdout.toString();
+            var tag = description.match((/([0-9\.]+(-\w+)?)(-\w+)?/))[1];
+
+            // Throw if tag is invalid
+            if (!tag) {
+                throw new Error("Can't determine tag for client release.");
+            }
+            // Save tag in the config where it will be used by `gh-pages:client`
+            grunt.config.set('client', {
+                tag: tag,
+                description: description
+            });
+
+            // Run tasks
+            grunt.log.writeln('Releasing client of version "' + tag + '" of state "' + description + '"...');
+            grunt.task.run([
+                'gh-pages:client'
+            ]);
+
+            done();
+        });
     });
 
     // Send coverage report to Coveralls.io only for Travis CI builds.
@@ -147,8 +201,8 @@ module.exports = function (grunt) {
     grunt.registerTask('test-ci', [mochaCoverageTask, 'e2e']);
     grunt.registerTask('ci', ['compile', 'test-ci', 'clean:sourceMaps']);
     grunt.registerTask('default', ['build', 'watch']);
-    grunt.registerTask('website', ['gh-pages']);
+    grunt.registerTask('website', ['gh-pages:doc']);
     grunt.registerTask('build', ['compile', 'test', 'document']);
-    grunt.registerTask('publish', ['build', 'release', 'website']);
-    grunt.registerTask('prerelease', ['build', 'release:prerelease', 'website']);
+    grunt.registerTask('publish', ['build', 'release', 'release-client', 'website']);
+    grunt.registerTask('prerelease', ['build', 'release:prerelease', 'release-client', 'website']);
 };

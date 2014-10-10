@@ -23,7 +23,6 @@ coverage
 
 # Compiled binary addons (http://nodejs.org/api/addons.html)
 /lib/
-/client/
 *.js.map
 
 # Dependency directory

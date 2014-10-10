@@ -1,0 +1,27 @@
+{
+  "name": "takorogo",
+  "main": "lib/takorogo.js",
+  "version": "0.0.1",
+  "homepage": "https://takorogo.github.io/",
+  "authors": [
+    "Mikhail Zyatin <mikhail.zyatin@gmail.com>"
+  ],
+  "description": "Takorogo client package",
+  "moduleType": [
+    "amd"
+  ],
+  "keywords": [
+    "takorogo",
+    "graphdb",
+    "neo4j",
+    "orientdb",
+    "graph",
+    "document",
+    "nosql"
+  ],
+  "dependencies": {
+    "lodash": "~2.4.1"
+  },
+  "license": "MIT",
+  "ignore": []
+}
