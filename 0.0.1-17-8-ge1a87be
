@@ -1,0 +1,24 @@
+{
+  "name": "takorogo",
+  "main": "grypher.js",
+  "version": "0.0.1-17",
+  "homepage": "https://github.com/Sitin/node-grypher",
+  "authors": [
+    "Mikhail Zyatin <mikhail.zyatin@gmail.com>"
+  ],
+  "description": "Takorogo client package",
+  "moduleType": [
+    "amd"
+  ],
+  "keywords": [
+    "takorogo",
+    "graphdb",
+    "neo4j",
+    "orientdb",
+    "graph",
+    "document",
+    "nosql"
+  ],
+  "license": "MIT",
+  "ignore": []
+}
