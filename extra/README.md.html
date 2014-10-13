@@ -6,6 +6,17 @@
   <script src='../javascript/application.js'></script>
   <script src='../javascript/search.js'></script>
   <link rel='stylesheet' href='../stylesheets/application.css' type='text/css'>
+  <script>
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'undefined']);
+    _gaq.push(['_trackPageview']);
+  
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
 </head>
   <body>
     <div id='base' data-path='../'></div>
@@ -60,7 +71,10 @@ var rules = grypher.parse(&#39;user &lt;--[POSTED]-- :User&#39;);
 </code></pre><p>Where <code>user</code> is a property name that contains embedded object and <code>:User</code> is a name of a class.</p><p>You can specify what attribute will be stored in relation passing them to relation in parentheses:</p><pre><code class="lang-grypher">--[PARTICIPATE_IN(score, wins)]--&gt; game:Game
 </code></pre><p>You can specify types for relation attributes:</p><pre><code class="lang-grypher">--[PARTICIPATE_IN(score: Score, wins: Integer)]--&gt; game:Game
 </code></pre><p>Or even destructuring an array property:</p><pre><code class="lang-grypher">entities.urls[] --[REFERS_TO(indices[first, last])]--&gt; :Url
-</code></pre><p>Attention. Currently only plain values are supported. </p><h3 id="attributes">Attributes</h3><p>Sometimes your document&#39;s structure doesn&#39;t fit plane key-value nature of node.
+</code></pre><p>Attention. Currently only plain values are supported. </p><h3 id="relations-resolved-from-keys">Relations resolved from keys</h3><p>Sometimes your document just points to something via key. In this case you can specify how relation should be resolved.</p><pre><code class="lang-grypher">in_reply_to_status_id_str =&gt; id_str &lt;--[ REPLIED_WITH|REPLIED_TO ]--&gt; in_reply_to:Tweet
+</code></pre><p>In the last case <code>=&gt;</code> means that <code>in_reply_to_status_id_str</code> should be treated as an <code>id_str</code> key.</p><p>For compound keys you can use following syntax:</p><pre><code class="lang-grypher">(longitude, latitude) =&gt; (x, y) --[ LOCATED ]--&gt; location:Point
+</code></pre>
+<h3 id="attributes">Attributes</h3><p>Sometimes your document&#39;s structure doesn&#39;t fit plane key-value nature of node.
 In this case you can specify properties by paths:</p><pre><code class="lang-grypher">--[CITIZEN_OF]--&gt; place.country:Country
 </code></pre><p>If document&#39;s field doesn&#39;t match what you want to have in the target node you can rename it:</p><pre><code class="lang-grypher">--[CITIZEN_OF]--&gt; place.country =&gt; country:Country
 </code></pre><p>You also can assign types to attributes (user-defined classes are also supported):</p><pre><code class="lang-grypher">def :Person {
@@ -138,7 +152,7 @@ def User(id_str) {
     --[REFERS_TO(indices[first, last])]--&gt; entities.url.urls[]:Url
 }
 </code></pre>
-<h2 id="road-map">Road map</h2>
+<h2 id="browser">Browser</h2><p>Client versions of <code>node-grypher</code> can be built from sources or can be found in <code>./client/</code> directory of NPM module.</p><h2 id="contribution">Contribution</h2><p>You can start from <a href="http://sitin.github.io/node-grypher/">API docs</a>.</p><p>I will accept only changes covered by unit tests.</p><h2 id="road-map">Road map</h2>
 <h3 id="support-indentation-for-class-rules">Support indentation for class rules</h3>
 <pre><code class="lang-grypher">def :Person
     UNIQUE(passport.id)
@@ -153,7 +167,7 @@ def User(id_str) {
       </div>
     </div>
     <div id='footer'>
-  October 09, 14 13:47:18 by
+  October 13, 14 17:05:12 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>
