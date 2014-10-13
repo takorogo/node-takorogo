@@ -145,6 +145,105 @@ describe('parser', function () {
                 }
             ]);
         });
+
+        describe('resolving', function() {
+            it('should support relations with resolving', function () {
+                expect(parser.parse('game_id => id --[ PLAYS ]--> game:Game')).to.be.deep.equal([
+                    {
+                        rule: "resolvedRelation",
+                        out: {
+                            name: "PLAYS"
+                        },
+                        attribute: {
+                            name: "game",
+                            type: {
+                                type: "object",
+                                title: "Game"
+                            }
+                        },
+                        resolve: {
+                            key: [
+                                {
+                                    name: "id",
+                                    aliasOf: {
+                                        name: "game_id"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]);
+            });
+
+            it('should support relations with compound key resolving', function () {
+                var expected = [
+                    {
+                        rule: "resolvedRelation",
+                        out: {
+                            name: "LOCATED"
+                        },
+                        attribute: {
+                            name: "location",
+                            type: {
+                                type: "object",
+                                title: "Location"
+                            }
+                        },
+                        resolve: {
+                            key: [
+                                {
+                                    name: "longitude"
+                                },
+                                {
+                                    name: "latitude"
+                                }
+                            ]
+                        }
+                    }
+                ];
+
+                // Notation with brackets
+                expect(parser.parse('(longitude, latitude) --[ LOCATED ]--> location:Location'))
+                    .to.be.deep.equal(expected);
+                // Simplified notation
+                expect(parser.parse('longitude, latitude --[ LOCATED ]--> location:Location'))
+                    .to.be.deep.equal(expected);
+            });
+
+            it('should support relations with compound key resolving and renaming', function () {
+                expect(parser.parse('(longitude, latitude) => (x, y) --[ LOCATED ]--> location:Point')).to.be.deep.equal([
+                    {
+                        rule: "resolvedRelation",
+                        out: {
+                            name: "LOCATED"
+                        },
+                        attribute: {
+                            name: "location",
+                            type: {
+                                type: "object",
+                                title: "Point"
+                            }
+                        },
+                        resolve: {
+                            key: [
+                                {
+                                    name: "x",
+                                    aliasOf: {
+                                        name: "longitude"
+                                    }
+                                },
+                                {
+                                    name: "y",
+                                    aliasOf: {
+                                        name: "latitude"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]);
+            });
+        });
     });
 
     describe('attributes', function () {

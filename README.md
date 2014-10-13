@@ -88,6 +88,22 @@ entities.urls[] --[REFERS_TO(indices[first, last])]--> :Url
 
 Attention. Currently only plain values are supported. 
 
+### Relations resolved from keys
+
+Sometimes your document just points to something via key. In this case you can specify how relation should be resolved.
+
+```grypher
+in_reply_to_status_id_str => id_str <--[ REPLIED_WITH|REPLIED_TO ]--> in_reply_to:Tweet
+```
+
+In the last case `=>` means that `in_reply_to_status_id_str` should be treated as an `id_str` key.
+
+For compound keys you can use following syntax:
+
+```grypher
+(longitude, latitude) => (x, y) --[ LOCATED ]--> location:Point
+```
+
 ### Attributes
 
 Sometimes your document's structure doesn't fit plane key-value nature of node.
@@ -117,7 +133,6 @@ Attention: attribute aliasing in types constraints are not supported yet.
 ### Embedded objects 
 
 Embedded objects are stored inside the node. Mechanism depends on graph database engine.  
-
 
 ### Links (anonymous relations)
 

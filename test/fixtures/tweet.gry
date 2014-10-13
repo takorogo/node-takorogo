@@ -9,8 +9,8 @@
     + location: String
 
     <--[POSTED]-- user:User
-    --> metadata
-    <--[ REPLIED_WITH|REPLIED_TO ]--> in_reply_to_status_id_str => in_reply_to:Tweet
+     --> metadata
+    in_reply_to_status_id_str => id_str <--[ REPLIED_WITH|REPLIED_TO ]--> in_reply_to:Tweet
      --[ REFERS_TO(indices[first, last]) ]--> entities.urls:Url[]
      --[ HAS_TAG(indices[first, last]) ]--> entities.hashtags:HashTag(text)[]
      --[ AT ]--> coordinates:Location

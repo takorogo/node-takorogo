@@ -100,12 +100,28 @@ class_definition
   ;
 
 relation
-  : RELATION_START relation_obj RELATION_END OUT
+  : relation_with_resolving
+    { $$ = $1; $$.rule = 'resolvedRelation'; }
+  | RELATION_START relation_obj RELATION_END OUT
     { $$ = { rule: 'relation', out: $2 }; }
   | IN RELATION_START relation_obj RELATION_END
     { $$ = { rule: 'relation', in: $3 }; }
   | IN RELATION_START relation_obj PIPE relation_obj RELATION_END OUT
     { $$ = { rule: 'relation', in: $3, out: $5 }; }
+  ;
+
+relation_with_resolving
+  : keys relation
+    { $$ = $2; $$.resolve = { key: $1 }; }
+  | '(' keys ')' relation
+    { $$ = $4; $$.resolve = { key: $2 }; }
+  | renaming relation
+    { $$ = $2; $$.resolve = { key: $1 }; }
+  ;
+
+renaming
+  : '(' keys ')' AS '(' keys ')'
+    { $$ = $6; var i; for (i = 0; i < $2.length; i++) { $$[i].aliasOf = $2[i]; } }
   ;
 
 type

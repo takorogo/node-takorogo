@@ -13,7 +13,16 @@ utils = require './utils'
 # @todo Put references into manipulated object
 #
 class Postprocessor
-    @supportedRules = ['definition', 'enumeration', 'index', 'attribute', 'relation', 'link', 'meta']
+    @supportedRules = [
+        'definition'
+        'enumeration'
+        'index'
+        'attribute'
+        'relation'
+        'resolvedRelation'
+        'link'
+        'meta'
+    ]
 
     @directMetadata = ['title', 'description']
 
@@ -438,11 +447,12 @@ class Postprocessor
     #
     # @param [Object] relation raw definition of relation
     # @param [Object] ctx context for relation
+    # @param [Boolean] addAttribute whether corresponding attribute should be added
     # @return [Object] relation context JSON Schema definition
     #
-    processRelation: (relation, ctx={}) ->
+    processRelation: (relation, ctx={}, addAttribute=true) ->
         # Process attribute
-        @processAttribute(attribute: relation.attribute, ctx)
+        @processAttribute(attribute: relation.attribute, ctx) if addAttribute
 
         # Create relation schema
         relation = _.merge _.omit(relation, ['rule', 'attribute']),
@@ -460,6 +470,28 @@ class Postprocessor
 
         # Add relation to context and return context
         utils.addAsObjectMember(ctx, 'relations', relation.property, relation)
+
+        # Return context
+        ctx
+
+    #
+    # Converts resolved relation definition to JSON Schema entry.
+    #
+    # @param [Object] relation raw definition of resolved relation
+    # @param [Object] ctx context for relation
+    # @return [Object] relation context JSON Schema definition
+    #
+    processResolvedRelation: (relation, ctx={}) ->
+        # Process attribute
+        for attribute in relation.resolve.key
+            @processAttribute(attribute: attribute, ctx)
+            utils.pushAsArrayUniqueItem(ctx, 'required', attribute.name)
+
+        # Normalize relation
+        relation.resolve = key: relation.resolve.key.map (attr) -> attr.name
+
+        # Process as normal relation but suppress attribute addition
+        @processRelation(relation, ctx, false)
 
         # Return context
         ctx

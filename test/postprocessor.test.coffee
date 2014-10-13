@@ -189,6 +189,55 @@ describe 'postprocessor', ->
                 type: 'object'
                 title: 'DateTime'
 
+        describe 'resolving', ->
+            resolvedRelationDefinition = null
+
+            beforeEach ->
+                resolvedRelationDefinition = postprocessor.postprocess([
+                    rule: 'resolvedRelation'
+                    out:
+                        name: 'PLAYS'
+                    attribute:
+                        name: 'game'
+                        type:
+                            type: 'object'
+                            title: 'Game'
+                    resolve:
+                        key: [
+                            {
+                                name: 'x'
+                                aliasOf:
+                                    name: 'longitude'
+                            }
+                            {
+                                name: 'y'
+                                aliasOf:
+                                    name: 'latitude'
+                            }
+                        ]
+                ])
+
+            it 'should properly work with actual properties names', ->
+                expect(resolvedRelationDefinition.properties).to.have.property('x')
+                expect(resolvedRelationDefinition.aliases).to.have.property('x', 'longitude')
+                expect(resolvedRelationDefinition.properties).to.have.property('y')
+                expect(resolvedRelationDefinition.aliases).to.have.property('y', 'latitude')
+
+            it 'should mark attributes as required', ->
+                expect(resolvedRelationDefinition.required).to.contain('x')
+                expect(resolvedRelationDefinition.required).to.contain('y')
+
+            it 'should add relation at the end', ->
+                expect(resolvedRelationDefinition.relations).has.property('game')
+
+            it 'should put keys for resolving relations', ->
+                expect(resolvedRelationDefinition.relations.game).has.property('resolve')
+                expect(resolvedRelationDefinition.relations.game.resolve.key).to.contain('x')
+                expect(resolvedRelationDefinition.relations.game.resolve.key).to.contain('y')
+
+            it 'should not put relation attribute to schema', ->
+                expect(resolvedRelationDefinition.properties).not.to.have.property('game')
+
 
     describe 'links', ->
         linkDefintion = null
