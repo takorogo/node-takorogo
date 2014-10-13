@@ -201,7 +201,7 @@ module.exports = function (grunt) {
     grunt.registerTask('test-ci', [mochaCoverageTask, 'e2e']);
     grunt.registerTask('ci', ['compile', 'test-ci', 'clean:sourceMaps']);
     grunt.registerTask('default', ['build', 'watch']);
-    grunt.registerTask('website', ['gh-pages:doc']);
+    grunt.registerTask('website', ['gh-pages:docs']);
     grunt.registerTask('build', ['compile', 'test', 'document']);
     grunt.registerTask('publish', ['build', 'release', 'release-client', 'website']);
     grunt.registerTask('prerelease', ['build', 'release:prerelease', 'release-client', 'website']);
