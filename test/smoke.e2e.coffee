@@ -3,10 +3,10 @@
 'use strict'
 
 
-grypher = require('..')
+takorogo = require('..')
 fs = require('fs')
-tweetRules = fs.readFileSync(__dirname + '/fixtures/tweet.gry').toString()
-schema = grypher.parse(tweetRules)
+tweetRules = fs.readFileSync(__dirname + '/fixtures/tweet.tako').toString()
+schema = takorogo.parse(tweetRules)
 tmpDir = "#{__dirname}/tmp"
 
 

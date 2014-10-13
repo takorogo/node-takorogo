@@ -1,6 +1,6 @@
 var
     parser = require('./lib/parser'),
-    Grypher = require('./lib/grypher');
+    Takorogo = require('./lib/takorogo');
 
 
-module.exports = new Grypher(parser);
+module.exports = new Takorogo(parser);

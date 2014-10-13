@@ -17,7 +17,7 @@ module.exports = function (grunt) {
         },
         jison: {
             all : {
-                files: { 'lib/parser.js': 'data/grypher.jison' }
+                files: { 'lib/parser.js': 'data/takorogo.jison' }
             }
         },
         coffeelint: {
@@ -97,8 +97,8 @@ module.exports = function (grunt) {
         },
         codo: {
             options: {
-                name: 'Node Grypher',
-                title: 'Node.js parser from Grypher to JSON Schema',
+                name: 'Node Takorogo',
+                title: 'Node.js parser from Takorogo to JSON Schema',
                 extra: [ 'LICENSE' ],
                 undocumented: true,
                 stats: false,
@@ -120,7 +120,7 @@ module.exports = function (grunt) {
             }
         },
         uglify: {
-            grypher: {
+            takorogo: {
                 files: {
                     'client/lib/takorogo.min.js': ['client/lib/takorogo.js']
                 }

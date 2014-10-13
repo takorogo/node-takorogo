@@ -10,7 +10,7 @@ expect = chai.expect
 parser = require('../lib/parser')
 Postprocessor = require('../lib/postprocessor')
 fs = require('fs')
-tweetRules = fs.readFileSync('./test/fixtures/tweet.gry').toString()
+tweetRules = fs.readFileSync('./test/fixtures/tweet.tako').toString()
 
 chai.use(sinonChai)
 
@@ -24,7 +24,7 @@ describe 'postprocessor', ->
     it 'should export Postprocessor class', ->
         expect(Postprocessor).to.be.a('function')
 
-    it 'should consume grypher parser results', ->
+    it 'should consume takorogo parser results', ->
         expect(->
             postprocessor.postprocess(parser.parse(tweetRules))
         ).to.not.throw()

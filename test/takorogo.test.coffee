@@ -8,23 +8,23 @@ sinonChai = require('sinon-chai')
 chai = require('chai')
 expect = chai.expect
 parser = require('../lib/parser')
-Grypher = require('../lib/grypher')
+Takorogo = require('../lib/takorogo')
 fs = require('fs')
-tweetRules = fs.readFileSync('./test/fixtures/tweet.gry').toString()
+tweetRules = fs.readFileSync('./test/fixtures/tweet.tako').toString()
 
 chai.use(sinonChai)
 
 
-describe 'grypher', () ->
-    it 'should export Grypher class', () ->
-        expect(Grypher).to.be.a('function')
+describe 'takorogo', () ->
+    it 'should export Takorogo class', () ->
+        expect(Takorogo).to.be.a('function')
 
     it 'should wrap parser', () ->
         spy = sinon.spy(parser, 'parse')
-        grypher = new Grypher(parser)
+        takorogo = new Takorogo(parser)
 
-        expect(grypher).to.respondTo('parse')
-        grypher.parse(tweetRules)
+        expect(takorogo).to.respondTo('parse')
+        takorogo.parse(tweetRules)
 
         expect(spy).have.been.called.once
         expect(spy).have.been.calledWith(tweetRules)

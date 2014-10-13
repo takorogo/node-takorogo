@@ -184,7 +184,7 @@ class Postprocessor
         if (rule.rule in @constructor.supportedRules)
             method = "process#{utils.capitalizeFirst(rule.rule)}"
             @[method](rule, ctx)
-        else throw new Error("Unrecognized Grypher rule #{rule.rule}.")
+        else throw new Error("Unrecognized Takorogo rule #{rule.rule}.")
 
     #
     # Converts rules for context into JSON Schema object definition.

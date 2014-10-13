@@ -1,4 +1,4 @@
-/* description: Parses Grypher rules. */
+/* description: Parses Takorogo rules. */
 
 /* lexical grammar */
 %lex

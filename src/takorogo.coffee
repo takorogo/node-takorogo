@@ -7,9 +7,9 @@ Postprocessor = require './postprocessor'
 
 
 #
-# @class Grypher
+# @class Takorogo
 #
-class Grypher
+class Takorogo
     #
     # @param [Object] parser
     #
@@ -26,6 +26,6 @@ class Grypher
         postprocessor.postprocess(@parser.parse(data))
 
 
-module.exports = Grypher
+module.exports = Takorogo
     
 

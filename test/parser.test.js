@@ -6,7 +6,7 @@
 var expect = require('chai').expect,
     parser = require('../lib/parser'),
     fs = require('fs'),
-    tweetRules = fs.readFileSync('./test/fixtures/tweet.gry').toString();
+    tweetRules = fs.readFileSync('./test/fixtures/tweet.tako').toString();
 
 
 describe('parser', function () {

@@ -1,13 +1,13 @@
-node-grypher
+node-takorogo
 ============
 
-Grypher to JSON parser for Node.js
+Takorogo to JSON parser for Node.js
 
-[![build status](https://travis-ci.org/Sitin/node-grypher.svg)](http://travis-ci.org/Sitin/node-grypher)
-[![Coverage Status](https://img.shields.io/coveralls/Sitin/node-grypher.svg)](https://coveralls.io/r/Sitin/node-grypher)
-[![NPM version](https://badge.fury.io/js/grypher.svg)](http://badge.fury.io/js/grypher)
-[![Dependency Status](https://david-dm.org/Sitin/node-grypher.svg)](https://david-dm.org/Sitin/node-grypher)
-[![devDependency Status](https://david-dm.org/Sitin/node-grypher/dev-status.svg)](https://david-dm.org/Sitin/node-grypher#info=devDependencies)
+[![build status](https://travis-ci.org/takorogo/node-takorogo.svg)](http://travis-ci.org/takorogo/node-takorogo)
+[![Coverage Status](https://img.shields.io/coveralls/takorogo/node-takorogo.svg)](https://coveralls.io/r/takorogo/node-takorogo)
+[![NPM version](https://badge.fury.io/js/takorogo.svg)](http://badge.fury.io/js/takorogo)
+[![Dependency Status](https://david-dm.org/takorogo/node-takorogo.svg)](https://david-dm.org/takorogo/node-takorogo)
+[![devDependency Status](https://david-dm.org/takorogo/node-takorogo/dev-status.svg)](https://david-dm.org/takorogo/node-takorogo#info=devDependencies)
 
 Installation
 ------------
@@ -15,21 +15,21 @@ Installation
 This module is installed via npm:
 
 ``` bash
-$ npm install grypher
+$ npm install takorogo
 ```
 
 Example Usage
 -------------
 
 ``` js
-var grypher = require('grypher');
-var rules = grypher.parse('user <--[POSTED]-- :User');
+var takorogo = require('takorogo');
+var rules = takorogo.parse('user <--[POSTED]-- :User');
 ```
 
-Grypher Syntax
+Takorogo Syntax
 --------------
 
-Grypher uses relations to maps properties to nodes determined by classes and their indices. That's all.
+Takorogo uses relations to maps properties to nodes determined by classes and their indices. That's all.
 
 ### Relations
   
@@ -50,19 +50,19 @@ var tweet = {
 
 In this case we can say that tweet posted by user:
   
-```grypher
+```takorogo
 --[POSTED_BY]--> user:User 
 ```
 
 Or that user posted a tweet:
 
-```grypher
+```takorogo
 <--[POSTED]-- user:User 
 ```
 
 Or user and tweet has a bidirectional relationship:
 
-```grypher
+```takorogo
 <--[POSTED|POSTED_BY]--> user:User 
 ```
 
@@ -70,19 +70,19 @@ Where `user` is a property name that contains embedded object and `:User` is a n
 
 You can specify what attribute will be stored in relation passing them to relation in parentheses:
 
-```grypher
+```takorogo
 --[PARTICIPATE_IN(score, wins)]--> game:Game
 ```
 
 You can specify types for relation attributes:
 
-```grypher
+```takorogo
 --[PARTICIPATE_IN(score: Score, wins: Integer)]--> game:Game
 ```
  
 Or even destructuring an array property:
  
-```grypher
+```takorogo
 entities.urls[] --[REFERS_TO(indices[first, last])]--> :Url
 ```
 
@@ -92,7 +92,7 @@ Attention. Currently only plain values are supported.
 
 Sometimes your document just points to something via key. In this case you can specify how relation should be resolved.
 
-```grypher
+```takorogo
 in_reply_to_status_id_str => id_str <--[ REPLIED_WITH|REPLIED_TO ]--> in_reply_to:Tweet
 ```
 
@@ -100,7 +100,7 @@ In the last case `=>` means that `in_reply_to_status_id_str` should be treated a
 
 For compound keys you can use following syntax:
 
-```grypher
+```takorogo
 (longitude, latitude) => (x, y) --[ LOCATED ]--> location:Point
 ```
 
@@ -109,19 +109,19 @@ For compound keys you can use following syntax:
 Sometimes your document's structure doesn't fit plane key-value nature of node.
 In this case you can specify properties by paths:
 
-```grypher
+```takorogo
 --[CITIZEN_OF]--> place.country:Country 
 ```
 
 If document's field doesn't match what you want to have in the target node you can rename it:
  
-```grypher
+```takorogo
 --[CITIZEN_OF]--> place.country => country:Country 
 ```
  
 You also can assign types to attributes (user-defined classes are also supported):
 
-```grypher
+```takorogo
 def :Person {
     + firstName :String
     + dateOfBirth :Date
@@ -138,7 +138,7 @@ Embedded objects are stored inside the node. Mechanism depends on graph database
 
 You can store unstructured embedded object as a link to node: 
 
-```grypher
+```takorogo
 --> metadata
 ```
 
@@ -153,13 +153,13 @@ As for normal relations you can specify classes and arrays for links:
 
 You can specify unique constraint: 
 
-```grypher
+```takorogo
 UNIQUE(id)
 ```
 
-Grypher also handles compound constraints:
+Takorogo also handles compound constraints:
   
-```grypher
+```takorogo
 UNIQUE(firstName, lastName)
 ```
 
@@ -167,20 +167,20 @@ UNIQUE(firstName, lastName)
 
 You can refer to already defined class or type by colon notation:
 
-```grypher
+```takorogo
 UNIQUE(id:Int)
 --> tweet:Tweet
 ```
 
 In case when you have a collection of instances you can use an array syntax:
 
-```grypher
+```takorogo
 --> comments:Comment[]
 ```
 
 Unstructured arrays are also supported:
 
-```grypher
+```takorogo
 --> things[]
 ```
 
@@ -188,25 +188,25 @@ Unstructured arrays are also supported:
 
 To define class use `def` keyword:
 
-```grypher
+```takorogo
 def Tweet
 ```
 
 You can specify primary key in parentheses:
 
-```grypher
+```takorogo
 def HashTag(text)
 ```
 
 Compound indexes are also supported:
 
-```grypher
+```takorogo
 def Person(firstname, lastname)
 ```
 
 And you can use paths to specify properties:
 
-```grypher
+```takorogo
 def Citizen(credentials.passport.number)
 ```
 
@@ -214,7 +214,7 @@ Sometimes your class's primary key is stored in array.
 For example we have a location document with unique combinations of longitude and latitude stored in array.
 For this cases you can write: 
 
-```grypher
+```takorogo
 def Location(coordinates[longitude, latitude])
 ```
 
@@ -222,7 +222,7 @@ def Location(coordinates[longitude, latitude])
 
 You can define rules for complex classes in curly braces:
 
-```grypher
+```takorogo
 def User(passport.id) {
     --[CHILD_OF]--> father:Person
     --[REFERS_TO(indices[first, last])]--> entities.url.urls[]:Url
@@ -233,13 +233,13 @@ def User(passport.id) {
 
 You can define enumeration mappers for arrays of fixed length:
 
-```grypher
+```takorogo
 def Coordinates [ longitude, latitude ]
 ```
 
 After array items specified we can treat it as a regular document:
 
-```grypher
+```takorogo
 def VendorCoordinates [ longitude, latitude, vendor ] {
   UNIQUE(longitude, latitude, vendor.id)
   --[PRODUCED_BY]--> vendor:Vendor  
@@ -250,13 +250,13 @@ def VendorCoordinates [ longitude, latitude, vendor ] {
 
 Simple classes can be defined inside relation rules by appending class name with parentheses:
 
-```grypher
+```takorogo
 --[POPULATED_WITH]--> comment:Comment(id)
 ```
 
 You can specify indices as in normal declaration: 
 
-```grypher
+```takorogo
 --[REFERS_TO]--> urls:Url(url)[]
 ```
 
@@ -265,9 +265,9 @@ That will create a class `Url` with `url` as primary key and use it as a map for
 
 ### Comments
 
-Grypher supports only one line comments (both `#` and `//`):
+Takorogo supports only one line comments (both `#` and `//`):
 
-```grypher
+```takorogo
 # JIRA task 
 def Task {
   UNIQUE(id)  // Primary key
@@ -278,9 +278,9 @@ def Task {
 Examples
 --------
 
-The following Grypher script describes tweet structure from Twitter Stream API:  
+The following Takorogo script describes tweet structure from Twitter Stream API:  
 
-```grypher
+```takorogo
 # The whole tweet document returned by Twitter Stream API
 def Tweet {
     UNIQUE(id_str:String)
@@ -317,13 +317,13 @@ def User(id_str) {
 Browser
 -------
 
-Client versions of `node-grypher` can be built from sources or can be found in `./client/` directory of NPM module.
+Client versions of `node-takorogo` can be built from sources or can be found in `./client/` directory of NPM module.
 
 
 Contribution
 ------------
 
-You can start from [API docs](http://sitin.github.io/node-grypher/).
+You can start from [API docs](http://sitin.github.io/node-takorogo/).
 
 I will accept only changes covered by unit tests.
 
@@ -333,7 +333,7 @@ Road map
 
 ### Support indentation for class rules
 
-```grypher
+```takorogo
 def :Person
     UNIQUE(passport.id)
     --[CHILD_OF]--> father:Person
@@ -341,7 +341,7 @@ def :Person
 
 ### Add attribute rewrite in type constraint statements
 
-```grypher
+```takorogo
 def :Person {
     + name.first => firstName :String
 }

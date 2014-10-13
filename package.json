@@ -1,18 +1,18 @@
 {
-  "name": "grypher",
+  "name": "takorogo",
   "version": "0.0.1-18",
-  "description": "Grypher to JSON parser for Node.js",
+  "description": "Takorogo to JSON parser for Node.js",
   "main": "index.js",
   "scripts": {
     "test": "node_modules/.bin/grunt ci"
   },
-  "homepage": "http://sitin.github.io/node-grypher/",
+  "homepage": "http://takorogo.github.io/node-takorogo/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Sitin/node-grypher"
+    "url": "https://github.com/takorogo/node-takorogo"
   },
   "keywords": [
-    "grypher",
+    "takorogo",
     "graphdb",
     "graph",
     "document-graph mapper",
@@ -23,12 +23,12 @@
   "author": "Mikhail Zyatin <mikhail.zyatin@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Sitin/node-grypher/issues"
+    "url": "https://github.com/takorogo/node-takorogo/issues"
   },
   "config": {
     "blanket": {
       "pattern": [
-        "node-grypher/lib"
+        "node-takorogo/lib"
       ]
     }
   },
