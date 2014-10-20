@@ -1,6 +1,11 @@
 var
-    parser = require('./lib/parser'),
-    Takorogo = require('./lib/takorogo');
+    parser = require('./lib/parser').parser,
+    Scope = require('./lib/scope');
 
 
-module.exports = new Takorogo(parser);
+parser.yy = { scope: new Scope() };
+
+module.exports.parse = function (input) {
+    "use strict";
+    return parser.parse(input);
+};

@@ -16,8 +16,10 @@ module.exports = function (grunt) {
             }
         },
         jison: {
-            all : {
-                files: { 'lib/parser.js': 'data/takorogo.jison' }
+            takorogo : {
+                files: [
+                    { 'lib/parser.js': ['data/takorogo.jison', 'data/takorogo.jisonlex'] }
+                ]
             }
         },
         coffeelint: {

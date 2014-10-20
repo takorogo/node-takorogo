@@ -1,192 +1,290 @@
-/* description: Parses Takorogo rules. */
+/* Takorogo Grammar */
 
-/* lexical grammar */
-%lex
+%start schema
 
-%%
+%ebnf
 
-\s+                   /* skip whitespace */
-
-"UNIQUE"              return 'UNIQUE'
-"def"                 return 'DEFINE'
-"+"                   return 'ATTR'
-\w+                   return 'SYMNAME'
-
-"--["                 return 'RELATION_START'
-"<"                   return 'IN'
-"]--"                 return 'RELATION_END'
-">"                   return 'OUT'
-"-->"                 return 'RELATION_OUT'
-
-"[]"                  return 'AS_ARRAY'
-
-"|"                   return 'PIPE'
-":"                   return ':'
-"=>"                  return 'AS'
-"="                   return 'IS'
-
-"("                   return '('
-")"                   return ')'
-
-"["                   return '['
-"]"                   return ']'
-
-"{"                   return '{'
-"}"                   return '}'
-
-"."                   return 'ACCESSOR'
-","                   return ','
-
-"\n"                  return 'EOL'
-<<EOF>>               return 'EOF'
-
-"@main"               return 'MAIN'
-
-\@.*\n                return 'META'
-\@.*<<EOF>>           return 'META'
-
-#.*\n                 /* skip comments */
-//.*\n                /* skip comments */
-#.*<<EOF>>            /* skip comments */
-//.*<<EOF>>           /* skip comments */
-
-/lex
-
-/* operator associations and precedence */
-
-%left  'RELATION_START', 'IN', 'UNIQUE'
-%right 'RELATION_END', 'OUT'
-
-%start file
+%options token-stack
 
 %% /* language grammar */
 
-file
-  : rules EOF
-    { return $1; }
-  ;
 
-rules
-  : rule
-    { $$ = [$1]; }
-  | rules rule
-    { $$ = $1.concat($2); }
-  ;
+/* Top level rules */
 
-rule
-  : relation attribute
-    { $$ = $1; $$.attribute = $2; }
-  | UNIQUE "(" keys ")"
-    { $$ = { rule: 'index', key: $3, type: 'unique' }; }
-  | ATTR attribute_with_type
-    { $$ = { rule: 'attribute', attribute: $2 }; }
-  | MAIN class_definition
-    { $$ = $2; $$.isMainDefinition = true; }
-  | class_definition
-      { $$ = $1; }
-  | rule '{' rules '}'
-    { $$ = $1; $$.rules = $$.rules = $3.concat($$.rules || []); }
-  | RELATION_OUT attribute
-    { $$ = { rule: 'link', attribute: $2 }; }
-  | META
-    { meta = $1.match(/@(\w+) (.*)/) || []; $$ = { rule: 'meta', key: meta[1], value: meta[2] }; }
-  ;
+schema
+    : schema_script EOF
+        { return yy.scope.create('schema', $schema_script); }
+    ;
+
+schema_script
+    : top_level_statement
+        { $$ = [$top_level_statement]; }
+    | schema_script top_level_statement
+        { $$ = [$top_level_statement].concat($schema_script); }
+    ;
+
+top_level_statement
+    : statement
+    ;
+
+statement
+    : class_definition_rule
+    | class_definition
+    | meta_statement
+    ;
+
+/* Metadata */
+
+meta_statement
+    : context_meta_entry
+        { $$ = $context_meta_entry; }
+    | meta_entry statement
+        { $$ = yy.scope.create('meta_extension', $statement, $meta_entry);  }
+    ;
+
+meta_entry
+    : METAID
+        { $$ = yy.scope.create('meta', $1); }
+    | METAID STRING
+        { $$ = yy.scope.create('meta', $1, $2); }
+    ;
+
+context_meta_entry
+    : METAID EXCLAMATION
+        { $$ = yy.scope.create('meta', $1); }
+    | METAID EXCLAMATION STRING
+        { $$ = yy.scope.create('meta', $1, $3); }
+    ;
+
+/* Class level rules */
 
 class_definition
-  : DEFINE class
-    { $$ = $2; $$.rule = 'definition'; }
-  | DEFINE class '[' properties ']'
-    { $$ = $2; $$.rule = 'enumeration'; $$.elements = $4; }
-  ;
+    : DEF symname COLON INDENT statement_list DEDENT
+        { $$ = yy.scope.create('class', $symname, $statement_list); }
+    ;
 
-relation
-  : relation_with_resolving
-    { $$ = $1; $$.rule = 'resolvedRelation'; }
-  | RELATION_START relation_obj RELATION_END OUT
-    { $$ = { rule: 'relation', out: $2 }; }
-  | IN RELATION_START relation_obj RELATION_END
-    { $$ = { rule: 'relation', in: $3 }; }
-  | IN RELATION_START relation_obj PIPE relation_obj RELATION_END OUT
-    { $$ = { rule: 'relation', in: $3, out: $5 }; }
-  ;
+statement_list
+    : statement
+        { $$ = [$statement]; }
+    | statement_list statement
+        { $$ = $statement_list.concat($statement); }
+    ;
 
-relation_with_resolving
-  : keys relation
-    { $$ = $2; $$.resolve = { key: $1 }; }
-  | '(' keys ')' relation
-    { $$ = $4; $$.resolve = { key: $2 }; }
-  | renaming relation
-    { $$ = $2; $$.resolve = { key: $1 }; }
-  ;
+class_definition_rule
+    : class_definition_rule_statement
+        { $$ = yy.scope.create('class_definition_rule', $class_definition_rule_statement); }
+    ;
 
-renaming
-  : '(' keys ')' AS '(' keys ')'
-    { $$ = $6; var i; for (i = 0; i < $2.length; i++) { $$[i].aliasOf = $2[i]; } }
-  ;
+class_definition_rule_statement
+    : index
+    | link
+    | attribute
+    | relation
+    | embedded
+    ;
+
+
+/* Embedded objects */
+embedded
+    : attribute INDENT statement_list DEDENT
+        { $$ = yy.scope.create('embedded', $attribute, $statement_list); }
+    ;
+
+
+/* Symbolic names, nodes and paths */
+
+symname
+    : ID
+    | ESCAPED_ID
+    ;
+
+node
+    : symname
+    | node DOT symname
+        { $$ = [$1, $2, $3].join(''); }
+    ;
+
+path
+    : node
+    | SLASH node
+        { $$ = '/' + $node; }
+    | DOTS node
+        { $$ = $1 + $node; }
+    ;
+
+
+/* Types and arrays */
+
+array_definition
+    : LARRBR RARRBR
+        { $$ = Infinity; }
+    | LARRBR unsigned_int_number RARRBR
+        { $$ = $unsigned_int_number; }
+    ;
 
 type
-  : class
-    { $$ = $1; }
-  | type AS_ARRAY
-    { $$ = $1; $$.isArrayOf = true; $$.arrayDepth = ($$.arrayDepth || 0) + 1; }
-  ;
+    : path
+        { $$ = yy.scope.create('type', $path) }
+    | array
+    ;
 
-class
-  : SYMNAME
-    { $$ = { type: 'object', title: $1 }; }
-  | class '(' ')'
-    { $$ = $1; $$.rules = []; $$.rule = 'definition'; }
-  | class '(' keys ')'
-    { $$ = $1; $$.rules = [{ rule: 'index', key: $3, type: 'unique' }]; $$.rule = 'definition'; }
-  ;
+array
+    : type array_definition
+        { $$ = yy.scope.create('array', $type, $array_definition); }
+    ;
 
-relation_obj
-  : SYMNAME
-    { $$ = {name: $1} }
-  | relation_obj '(' keys ')'
-      { $$ = $1; $$.attributes = $3 }
-  ;
-  
-attribute
-  : attribute_without_type
-    { $$ = $1; }
-  | attribute_with_type
-    { $$ = $1; }
-  ;
 
-attribute_without_type
-  : property
-    { $$ = $1; }
-  | property '[' keys ']'
-    { $$ = $1; $$.keys = $3; }
-  | property AS attribute
-    { $$ = $3; $$.aliasOf = $1; }
-  ;
-
-attribute_with_type
-  : attribute_without_type ':' type
-      { $$ = $1; $$.type = $3; }
-  | attribute_without_type AS_ARRAY
-      { $$ = $1; $$.type = 'array'; }
-  ;
+/* Properties, attributes and keys */
 
 property
-  : SYMNAME
-    { $$ = { name: $1 }; }
-  | property ACCESSOR SYMNAME
-      { $$ = $1; $$.name += '.' + $3; }
-  ;
+    : property_expression
+        { $$ = yy.scope.create('property', $property_expression); }
+    ;
 
-properties
-  : property
-    { $$ = [$1]; }
-  | properties ',' property
-    { $$ = $1; $$.push($3); }
-  ;
+property_expression
+    : node
+        { $$ = { node: $node }; }
+    | node COLON type
+        { $$ = { node: $node, type: $type }; }
+    | LPAREN property LPAREN
+        { $$ = $property; }
+    ;
 
-keys
-  : attribute
-    { $$ = [$1]; }
-  | keys ',' attribute
-    { $$ = $1; $$.push($3); }
-  ;
+attribute
+    : attribute_expression
+        { $$ = yy.scope.create('attribute', $1); }
+    ;
+
+attribute_expression
+    : property
+    | property AS property
+        { $$ = yy.scope.create('renaming', $1, $2); }
+    | node LARRBR key RARRBR
+        { $$ = yy.scope.create('destructure', $node, $key); }
+    ;
+
+key
+    : property
+        { $$ = yy.scope.create('key', $property); }
+    | key COMMA property
+        { $$ = $key.add($property); }
+    ;
+
+
+/* Batch renames */
+
+batch_rename
+    : tuple AS tuple
+        { $$ = yy.scope.create('batch_rename', $1, $2); }
+    ;
+
+
+/* Tuples */
+
+tuple
+    : LPAREN tuple_items RPAREN
+        { $$ = $tuple_items; }
+    ;
+
+tuple_items
+    : tuple_item
+        { $$ = yy.scope.create('tuple', $tuple_item); }
+    | tuple_items COMMA tuple_item
+        { $$ = $tuple_items.add($tuple_item); }
+    ;
+
+tuple_item
+    : attribute
+    | tuple
+    ;
+
+
+/* Indexes */
+
+index
+    : UNIQUE index_key
+        { $$ = yy.scope.create('index', $index_key); }
+    ;
+
+index_key
+    : attribute
+    | tuple
+    ;
+
+
+/* Relations */
+
+relation
+    : relation_body attribute
+        { $$ = yy.scope.create('relation', $relation_body, $attribute); }
+    ;
+
+link
+    : link_key relation_body type
+        { $$ = yy.scope.create('link', $link_key, $relation_body, $type); }
+    ;
+
+link_key
+    : tuple
+    | batch_rename
+    ;
+
+relation_body
+    : RELATION_START relation_options RELATION_OUT_END
+        { $$ = yy.scope.create('relation_body', 'out', $relation_options); }
+    | IN_RELATION_START relation_options RELATION_END
+        { $$ = yy.scope.create('relation_body', 'in', $relation_options); }
+    | IN_RELATION_START relation_options RELATION_OUT_END
+        { $$ = yy.scope.create('relation_body', 'bilateral', $relation_options); }
+    | unnamed_relation_body
+        { $$ = yy.scope.create('relation_body', $unnamed_relation_body, null); }
+    ;
+
+unnamed_relation_body
+    : UNNAMED_RELATION_IN_OUT
+        { $$ = 'bilateral'; }
+    | UNNAMED_RELATION_OUT
+        { $$ = 'out'; }
+    | UNNAMED_RELATION_IN
+        { $$ = 'in'; }
+    ;
+
+relation_options
+    : relation_definition
+        { $$ = yy.scope.create('relation_options', $relation_definition); }
+    | relation_definition PIPE relation_definition
+        { $$ = yy.scope.create('relation_options', $1, $3); }
+    ;
+
+relation_definition
+    : symname
+        { $$ = yy.scope.create('relation_definition', $symname); }
+    | symname tuple
+        { $$ = yy.scope.create('relation_definition', $symname, $tuple); }
+    ;
+
+
+/* Numbers */
+
+number
+    : float_number
+    | int_number
+    ;
+
+unsigned_int_number
+    : NATLITERAL
+        { $$ = parseInt($1); }
+    ;
+
+int_number
+    : unsigned_int_number
+    | MINUS int_number
+        { $$ = 0 - $int_number; }
+    ;
+
+float_number
+    : NATLITERAL DOT NATLITERAL
+        { $$ = parseFloat($1 + $2 + $3); }
+    | MINUS float_number
+        { $$ = 0 - $float_number; }
+    ;

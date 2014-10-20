@@ -1,32 +1,32 @@
 # Metadata
-@description Tweet document returned by Twitter Stream API
+@main! "Tweet"
+@description! "Tweet document returned by Twitter Stream API"
 
 # Main definition for schema
-@main def Tweet {
-    UNIQUE(id_str:String)
-    UNIQUE(id:Int)
+@engine "Neoj4"
+def Tweet:
+    unique id_str: String
+    unique id: Int
 
-    + location: String
+    location: String
 
-    <--[POSTED]-- user:User
-     --> metadata
-    in_reply_to_status_id_str => id_str <--[ REPLIED_WITH|REPLIED_TO ]--> in_reply_to:Tweet
-     --[ REFERS_TO(indices[first, last]) ]--> entities.urls:Url[]
-     --[ HAS_TAG(indices[first, last]) ]--> entities.hashtags:HashTag(text)[]
-     --[ AT ]--> coordinates:Location
-     --[ ON ]--> geo:Location
-     --[ PLACED ]--> place:Place
-}
+    <--[POSTED]-- user: User
+    --> metadata
+    (in_reply_to_status_id_str => id_str) <--[ REPLIED_WITH | REPLIED_TO ]--> Tweet
+    --[ REFERS_TO(indices[first, last]) ]--> entities.urls:Url[]
+    --[ HAS_TAG(indices[first, last]) ]--> entities.hashtags:HashTag[]
+    coordinates.coordinates[longitude, latitude] --[ AT ]--> Coordinates
+    geo
+        coordinates[longitude, latitude] --[ ON ]--> Coordinates
+    --[ PLACED(coordinates.coordinates[longitude, latitude]) ]--> place:Place
 
 # Just a point
-def Coordinates(longitude: Float, latitude: Float) [ longitude, latitude ]
+def Coordinates:
+    unique (longitude: Float, latitude: Float)
 
-def Location(coordinates:Coordinates)  // Simply a wrapper for coordinates
-
-def Place {
+def Place:
     --[ BOUNDED_BY ]--> bounding_box.coordinates => bounding_box:Coordinates[]
-}
 
-def User(id_str) {
+def User:
+    unique id_str: String
     --[REFERS_TO(indices[first, last])]--> entities.url.urls:Url[]
-}
