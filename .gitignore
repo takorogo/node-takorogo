@@ -3,6 +3,9 @@ logs
 *.log
 tmp/
 
+# Temporary files
+_tmp_*
+
 # Runtime data
 pids
 *.pid

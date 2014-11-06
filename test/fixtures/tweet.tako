@@ -1,32 +1,32 @@
 # Metadata
-@main! "Tweet"
-@description! "Tweet document returned by Twitter Stream API"
+@main! = Tweet
+@description! = "Tweet document returned by Twitter Stream API"
 
 # Main definition for schema
-@engine "Neoj4"
-def Tweet:
-    unique id_str: String
-    unique id: Int
+@engine="Neoj4"
+Tweet =
+    @unique id_str: String
+    @unique id: Int
 
     location: String
 
     <--[POSTED]-- user: User
-    --> metadata
+    --> metadata:*
     (in_reply_to_status_id_str => id_str) <--[ REPLIED_WITH | REPLIED_TO ]--> Tweet
     --[ REFERS_TO(indices[first, last]) ]--> entities.urls:Url[]
     --[ HAS_TAG(indices[first, last]) ]--> entities.hashtags:HashTag[]
-    coordinates.coordinates[longitude, latitude] --[ AT ]--> Coordinates
-    geo
-        coordinates[longitude, latitude] --[ ON ]--> Coordinates
+    coordinates
+        coordinates[longitude, latitude] --[ AT ]--> Coordinates
+    geo.coordinates[longitude, latitude] --[ ON ]--> Coordinates
     --[ PLACED(coordinates.coordinates[longitude, latitude]) ]--> place:Place
 
 # Just a point
-def Coordinates:
-    unique (longitude: Float, latitude: Float)
+Coordinates =
+    @unique (longitude: Float, latitude: Float)
 
-def Place:
+Place =
     --[ BOUNDED_BY ]--> bounding_box.coordinates => bounding_box:Coordinates[]
 
-def User:
-    unique id_str: String
+User =
+    @unique id_str: String
     --[REFERS_TO(indices[first, last])]--> entities.url.urls:Url[]

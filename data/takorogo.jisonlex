@@ -9,7 +9,7 @@ spc                         [\t \u00a0\u2000\u2001\u2002\u2003\u2004\u2005\u2006
 
 %%
 
-"def"                       return 'DEF';
+"data"                      return 'DATA';
 "unique"                    return 'UNIQUE';
 ":"                         return 'COLON';
 ";"                         return 'SEMICOLON';
@@ -35,6 +35,13 @@ spc                         [\t \u00a0\u2000\u2001\u2002\u2003\u2004\u2005\u2006
 "<-->"                      return 'UNNAMED_RELATION_IN_OUT';
 "-->"                       return 'UNNAMED_RELATION_OUT';
 "<--"                       return 'UNNAMED_RELATION_IN';
+
+"<"                         return 'LESS_THAN';
+">"                         return 'GREATER_THAN';
+
+"="                         return 'EQUALS'
+
+"*"                         return 'STAR'
 
 "["                         this.begin('ARRAY'); return 'LARRBR';
 "]"                         this.popState(); return 'RARRBR';
@@ -81,7 +88,10 @@ spc                         [\t \u00a0\u2000\u2001\u2002\u2003\u2004\u2005\u2006
                                     tokens.unshift("DEDENT");
                                     _iemitstack.shift();
                                 }
-                                if (tokens.length) return tokens;
+
+                                // Add end of line after DEDENT:
+                                tokens.unshift('EOL');
+                                return tokens;
                             %}
 
 {spc}+                      /* ignore all other whitespace */

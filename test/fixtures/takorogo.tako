@@ -1,0 +1,64 @@
+rules: Definition[]
+meta: Meta[]
+
+
+Definition = Member | Type
+
+
+Statement =
+    meta: Meta[]
+
+
+Type < Statement =
+    rules: Definition[]
+
+
+Member < Statement =
+    definition: MemberDefinition
+
+
+MemberDefinition = Relation | Link | AttributeExpression
+
+
+Relation =
+    body: LinkBody
+    target: Attribute
+
+
+AttributeExpression = Attribute | BatchRename | Tuple
+
+
+Attribute = Property | Renaming | Destructure
+
+
+Destructure =
+    node: Node
+    destructuredTo: Key
+
+
+Key < FlatList
+
+
+Renaming =
+    target: Property
+    source: Property | Array
+
+
+Property < Path =
+    type: Type
+
+
+Path < Node =
+    prefix: String
+
+
+Type < Path
+
+
+Node =
+    node: String
+
+
+FlatList =
+    items: *[]
+    add: Function

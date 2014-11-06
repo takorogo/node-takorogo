@@ -9,89 +9,146 @@
 %% /* language grammar */
 
 
-/* Top level rules */
+/***************************************
+ * Top level rules
+ ***************************************/
 
 schema
-    : schema_script EOF
-        { return yy.scope.create('schema', $schema_script); }
+    : statements EOF
+        { return yy.scope.create('schema', $statements); }
     ;
 
-schema_script
-    : top_level_statement
-        { $$ = [$top_level_statement]; }
-    | schema_script top_level_statement
-        { $$ = [$top_level_statement].concat($schema_script); }
-    ;
-
-top_level_statement
-    : statement
-    ;
-
-statement
-    : class_definition_rule
-    | class_definition
-    | meta_statement
-    ;
-
-/* Metadata */
-
-meta_statement
-    : context_meta_entry
-        { $$ = $context_meta_entry; }
-    | meta_entry statement
-        { $$ = yy.scope.create('meta_extension', $statement, $meta_entry);  }
-    ;
-
-meta_entry
-    : METAID
-        { $$ = yy.scope.create('meta', $1); }
-    | METAID STRING
-        { $$ = yy.scope.create('meta', $1, $2); }
-    ;
-
-context_meta_entry
-    : METAID EXCLAMATION
-        { $$ = yy.scope.create('meta', $1); }
-    | METAID EXCLAMATION STRING
-        { $$ = yy.scope.create('meta', $1, $3); }
-    ;
-
-/* Class level rules */
-
-class_definition
-    : DEF symname COLON INDENT statement_list DEDENT
-        { $$ = yy.scope.create('class', $symname, $statement_list); }
-    ;
-
-statement_list
+statements
     : statement
         { $$ = [$statement]; }
-    | statement_list statement
-        { $$ = $statement_list.concat($statement); }
+    | statement eols statements
+        { $$ = [$statement].concat($statements); }
     ;
 
-class_definition_rule
-    : class_definition_rule_statement
-        { $$ = yy.scope.create('class_definition_rule', $class_definition_rule_statement); }
+
+/***************************************
+ * Line endings
+ ***************************************/
+
+eols
+    : EOL
+    | eols EOL
     ;
 
-class_definition_rule_statement
-    : index
-    | link
-    | attribute
+optional_eol
+    : eols
+    |
+    ;
+
+
+/***************************************
+ * Statements
+ ***************************************/
+
+statement
+    : detailed_type
+    | simple_type
+    | member
+    | meta
+    ;
+
+
+/***************************************
+ * Type definition rules
+ ***************************************/
+
+meta
+    : metatag statement
+        { $$ = yy.scope.create('meta_extension', $statement, $metatag);  }
+    | metatag meta_properties eols statement
+        { $$ = yy.scope.create('meta_extension', $statement, $metatag, $meta_properties);  }
+    | metatag EXCLAMATION meta_properties
+        { $$ = yy.scope.create('meta', $metatag, $meta_properties);  }
+    ;
+
+metatag
+    : METAID
+    ;
+
+meta_properties
+    : EQUALS meta_option
+        { $$ = $meta_option; }
+    |
+    ;
+
+meta_option
+    : distinct_type
+    | number
+    | STRING
+    ;
+
+
+/***************************************
+ * Type definition rules
+ ***************************************/
+
+detailed_type
+    : type_hierarchy_expression EQUALS INDENT statements DEDENT
+        { $$ = yy.scope.create('class', $type_hierarchy_expression, $statements); }
+    ;
+
+simple_type
+    : type_hierarchy_expression EQUALS type
+        { $$ = yy.scope.create('alias', $type_hierarchy_expression, $type); }
+    | strict_type_hierarchy_expression
+        { $$ = yy.scope.create('class', $strict_type_hierarchy_expression); }
+    ;
+
+type_hierarchy_expression
+    : symname optional_inheritance_rule
+        { $$ = yy.scope.create('type_hierarchy_expression', $symname, $optional_inheritance_rule); }
+    ;
+
+strict_type_hierarchy_expression
+    : symname inheritance_rule
+        { $$ = yy.scope.create('type_hierarchy_expression', $symname, $inheritance_rule); }
+    ;
+
+optional_inheritance_rule
+    : inheritance_rule
+    |
+    ;
+
+inheritance_rule
+    : LESS_THAN path_list
+        { $$ = $path_list; }
+    ;
+
+
+/***************************************
+ * Members rule
+ ***************************************/
+
+member
+    : member_statement
+        { $$ = yy.scope.create('member', $member_statement); }
+    ;
+
+member_statement
+    : attribute_expression_or_link
     | relation
     | embedded
     ;
 
 
-/* Embedded objects */
+/***************************************
+ * Embedded objects
+ ***************************************/
+
 embedded
-    : attribute INDENT statement_list DEDENT
-        { $$ = yy.scope.create('embedded', $attribute, $statement_list); }
+    : node INDENT statements DEDENT
+        { $$ = yy.scope.create('embedded', $node, $statements); }
     ;
 
 
-/* Symbolic names, nodes and paths */
+/***************************************
+ * Symbolic names, nodes and paths
+ ***************************************/
 
 symname
     : ID
@@ -106,14 +163,26 @@ node
 
 path
     : node
-    | SLASH node
-        { $$ = '/' + $node; }
-    | DOTS node
-        { $$ = $1 + $node; }
+    | path_prefix node
+        { $$ = yy.scope.create('path', $node, $path_prefix); }
+    ;
+
+path_prefix
+    : SLASH
+    | DOTS
+    ;
+
+path_list
+    : path
+        { $$ = [$path]; }
+    | path_list COMMA path
+        { $$ = $path_list; $$.push($path); }
     ;
 
 
-/* Types and arrays */
+/***************************************
+ * Types and arrays
+ ***************************************/
 
 array_definition
     : LARRBR RARRBR
@@ -123,44 +192,81 @@ array_definition
     ;
 
 type
-    : path
-        { $$ = yy.scope.create('type', $path) }
+    : distinct_type
+    | mixed_type
+    ;
+
+distinct_type
+    : STAR
+        { $$ = yy.scope.create('any_type'); }
+    | path
+        { $$ = yy.scope.create('type', $path); }
     | array
     ;
 
+mixed_type
+    : distinct_type PIPE type
+        { $$ = yy.scope.create('type_variations', $distinct_type); $$.add($type); }
+    ;
+
 array
-    : type array_definition
-        { $$ = yy.scope.create('array', $type, $array_definition); }
+    : distinct_type array_definition
+        { $$ = yy.scope.create('array', $distinct_type, $array_definition); }
+    | LPAREN mixed_type RPAREN array_definition
+        { $$ = yy.scope.create('array', $mixed_type, $array_definition); }
     ;
 
 
-/* Properties, attributes and keys */
+/***************************************
+ * Properties, attributes and keys
+ ***************************************/
 
 property
-    : property_expression
-        { $$ = yy.scope.create('property', $property_expression); }
+    : node optional_type_assignment
+        { $$ = yy.scope.create('property', $node, $optional_type_assignment); }
     ;
 
-property_expression
-    : node
-        { $$ = { node: $node }; }
-    | node COLON type
-        { $$ = { node: $node, type: $type }; }
-    | LPAREN property LPAREN
-        { $$ = $property; }
+property_with_type
+    : node type_assignment
+        { $$ = yy.scope.create('property', $node, $type_assignment); }
     ;
 
-attribute
+type_assignment
+    : COLON type
+        { $$ = $type; }
+    ;
+
+optional_type_assignment
+    : type_assignment
+    |
+    ;
+
+attribute_expression_or_link
     : attribute_expression
-        { $$ = yy.scope.create('attribute', $1); }
+    | link
     ;
 
 attribute_expression
+    : attribute
+    | batch_rename
+    | tuple
+    ;
+
+attribute
     : property
-    | property AS property
-        { $$ = yy.scope.create('renaming', $1, $2); }
-    | node LARRBR key RARRBR
+        { $$ = yy.scope.create('attribute', $1); }
+    | renaming
+    | destructure
+    ;
+
+destructure
+    : node LARRBR key RARRBR
         { $$ = yy.scope.create('destructure', $node, $key); }
+    ;
+
+renaming
+    : property AS property
+        { $$ = yy.scope.create('renaming', $1, $3); }
     ;
 
 key
@@ -171,7 +277,33 @@ key
     ;
 
 
-/* Batch renames */
+/***************************************
+ * Methods
+ ***************************************/
+
+method
+    : symname LPAREN method_params RPAREN method_return_type
+        { $$ = yy.scope.create('method', $symname, $method_params, $method_return_type); }
+    ;
+
+
+method_params
+    : key
+    |
+        { $$ = undefined; }
+    ;
+
+method_return_type
+    : COLON type
+        { $$ = $type; }
+    |
+        { $$ = undefined; }
+    ;
+
+
+/***************************************
+ * Batch renames
+ ***************************************/
 
 batch_rename
     : tuple AS tuple
@@ -199,7 +331,9 @@ tuple_item
     ;
 
 
-/* Indexes */
+/***************************************
+ * Indexes
+ ***************************************/
 
 index
     : UNIQUE index_key
@@ -212,7 +346,9 @@ index_key
     ;
 
 
-/* Relations */
+/***************************************
+ * Relations
+ ***************************************/
 
 relation
     : relation_body attribute
@@ -220,13 +356,13 @@ relation
     ;
 
 link
-    : link_key relation_body type
-        { $$ = yy.scope.create('link', $link_key, $relation_body, $type); }
+    : attribute_expression link_body
+        { $$ = yy.scope.create('link', $attribute_expression, $link_body); }
     ;
 
-link_key
-    : tuple
-    | batch_rename
+link_body
+    : relation_body type
+        { $$ = yy.scope.create('link_body', $relation_body, $type); }
     ;
 
 relation_body
@@ -264,7 +400,9 @@ relation_definition
     ;
 
 
-/* Numbers */
+/***************************************
+ * Numbers
+ ***************************************/
 
 number
     : float_number

@@ -9,13 +9,47 @@ class FlatList
         if item then @add(item)
 
     add: (item) ->
-        # Add item for exact type
+        # Add item for exact type flattering it's container
         if item.constructor.name is @constructor.name
-            item = item.items
-        @items.concat(item)
+            @items = @items.concat(item.items)
+        # Or simply push it into array
+        else
+            @items.push(item)
+        # Return items
+        @items
 
 
-class Array
+class Node
+    constructor: (@node) ->
+
+
+class Path extends Node
+    constructor: (node, @prefix) ->
+        super(node)
+
+
+class Property extends Node
+    constructor: (node, @type) ->
+        super(node)
+
+
+class Type extends Path
+    constructor: (@path) ->
+
+
+class AnyType extends Type
+    constructor: () ->
+
+
+class TypeVariations extends Type
+    constructor: (args...) ->
+        FlatList.apply(@, args)
+
+    add: (args...) ->
+        FlatList.prototype.add.apply(@, args)
+
+
+class Array extends Type
     constructor: (type, length) ->
         @dimensions = [length]
 
@@ -26,32 +60,28 @@ class Array
             @items = type
 
 
-class Type
-    constructor: (@node) ->
+class Attribute extends Property
+    constructor: (@property) ->
 
 
-class Attribute
-    constructor: (@definition) ->
-
-
-class Property
-    constructor: (@definition) ->
-
-
-class Renaming
+class Renaming extends Attribute
     constructor: (@source, @target) ->
 
 
-class Destructure
+class Destructure extends Attribute
     constructor: (@node, @destructuredTo) ->
 
 
-class Tuple extends FlatList
+class Key extends FlatList
     constructor: (args...) ->
         super args...
 
 
-class Key extends FlatList
+class Method
+    constructor: (@name, @parameters, @returns) ->
+
+
+class Tuple extends Key
     constructor: (args...) ->
         super args...
 
@@ -64,8 +94,13 @@ class Relation
     constructor: (@body, @target) ->
 
 
-class Link
-    constructor: (@key, @body, @target) ->
+class LinkBody
+    constructor: (@body, @target) ->
+
+
+class Link extends Relation
+    constructor: (@key, body) ->
+        super(body.body, body.target)
 
 
 class RelationDefinition
@@ -98,12 +133,25 @@ class RelationBody
             else throw new Error("Unsupported relation body type #{type}.")
 
 
-class ClassDefinitionRule
-    constructor: (@statement) ->
+class Member
+    constructor: (@definition) ->
 
 
 class Class
-    constructor: (@name, @rules) ->
+    constructor: (classType, @rules) ->
+        classType.configure(@)
+
+
+class TypeHierarchyExpression
+    constructor: (@name, @ancestors, @interfaces) ->
+
+    configure: (subject) ->
+        for prop in Object.keys(@) when @[prop]?
+            subject[prop] = @[prop]
+
+
+class Alias extends Class
+    constructor: (@name, @type) ->
 
 
 class Embedded
@@ -111,7 +159,7 @@ class Embedded
 
 
 class Meta
-    constructor: (@name, @value) ->
+    constructor: (@tag, @options) ->
 
 
 class Schema
@@ -122,18 +170,26 @@ module.exports =
     Schema: Schema
     Meta: Meta
     Class: Class
+    TypeHierarchyExpression: TypeHierarchyExpression
+    Alias: Alias
     Embedded: Embedded
-    ClassDefinitionRule: ClassDefinitionRule
+    Member: Member
+    Node: Node
+    Path: Path
     Type: Type
+    AnyType: AnyType
+    TypeVariations: TypeVariations
     Array: Array
     Property: Property
     Attribute: Attribute
     Renaming: Renaming
     Destructure: Destructure
     Key: Key
+    Method: Method
     Tuple: Tuple
     Index: Index
     Relation: Relation
+    LinkBody: LinkBody
     Link: Link
     RelationBody: RelationBody
     RelationOptions: RelationOptions

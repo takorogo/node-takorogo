@@ -14,20 +14,28 @@ class Scope
             'meta_extension',
             'meta',
             'class',
-            'class_definition_rule',
+            'type_hierarchy_expression',
+            'alias',
+            'member',
+            'node',
+            'path',
             'embedded',
             'type',
+            'any_type',
+            'type_variations',
             'array',
             'property',
             'attribute',
             'renaming',
             'destructure',
             'key',
+            'method',
             'batch_rename',
             'tuple',
             'index',
             'relation'
             'link',
+            'link_body',
             'relation_body',
             'relation_options',
             'relation_definition',
@@ -52,10 +60,19 @@ class Scope
 
         throw new Error("Creation of elements of type #{type} is unsupported.")
 
-    createMetaExtension: (statement, meta) ->
+
+    addMeta: (statement, meta)->
         statement.meta = statement.meta || []
         statement.meta.push(meta)
         statement
+
+    createMetaExtension: (statement, tag, options) ->
+        meta = if options
+            tag: tag
+            options: options
+        else
+            tag
+        @addMeta(statement, meta)
 
     createBatchRename: (source, target) ->
         new Tuple(@zipBatch(source, target))
